@@ -96,7 +96,7 @@ class WidgetHostHolder(private val context: Context) {
     fun startAdd(provider: AppWidgetProviderInfo): AddWidgetResult {
         val id = runCatching { host.allocateAppWidgetId() }.getOrNull()
             ?: return AddWidgetResult.Failed
-        val bound = runCatching { manager.bindAppWidgetIdIfAllowed(id, provider) }
+        val bound = runCatching { manager.bindAppWidgetIdIfAllowed(id, provider.provider) }
             .getOrDefault(false)
         return if (bound) {
             AddWidgetResult.Bound(id)
