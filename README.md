@@ -30,6 +30,16 @@ Kotlin 2.0.21 · AGP 8.7.2 · Gradle 8.9 · minSdk 26 · targetSdk 35
   рендерятся в фоне, поэтому прокрутка не подтормаживает.
 - Локализация: английский и русский. Тёмная тема всегда (как в оболочке Ubuntu Touch).
 
+## Готовый APK
+
+**[Скачать app-debug.apk](https://github.com/vetos26/Launcher/releases/latest/download/app-debug.apk)** — собран
+GitHub Actions (workflow «Android build») и лежит в [релизе v1.0](https://github.com/vetos26/Launcher/releases/tag/v1.0).
+
+Установка: скачайте файл на телефон, разрешите установку из этого источника и откройте APK.
+Затем выберите лаунчер домашним экраном:
+*Настройки → Приложения → Приложения по умолчанию → Домашнее приложение*.
+На Android 10+ альтернатива: `adb install -r app-debug.apk`.
+
 ## Сборка
 
 Нужен Android Studio (Koala или новее) либо JDK 17 + Android SDK 35.
@@ -78,9 +88,9 @@ app/src/main/java/dev/utouch/launcher/
 
 ## Заметки
 
-- Проект **не компилировался в этой среде** (в песочнице нет JDK и Android SDK) —
-  версии Gradle/AGP/Compose зафиксированы на заведомо совместимые, но первую сборку
-  стоит запустить в Android Studio.
+- APK собирается в CI (`.github/workflows/android.yml`): каждый пуш в `main`/`arena/**`
+  запускает `./gradlew assembleDebug`, а сборка из `workflow_dispatch` дополнительно
+  публикует релиз с APK.
 - `QUERY_ALL_PACKAGES` нужен, чтобы видеть все приложения; для Google Play это
   чувствительное разрешение (для личного лаунчера и F-Droid всё в порядке).
 - Обои читаются через `WallpaperManager` «best effort»: если прошивка не даёт доступ,
