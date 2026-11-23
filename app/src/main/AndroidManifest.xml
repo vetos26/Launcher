@@ -7,6 +7,9 @@
     -->
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
 
+    <!-- Weather card (Open-Meteo, no API key). -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <queries>
         <intent>
             <action android:name="android.intent.action.MAIN" />

@@ -89,6 +89,8 @@ fun LauncherDrawer(
     onIncludeSystemAppsChange: (Boolean) -> Unit,
     onUseWallpaperChange: (Boolean) -> Unit,
     onShowLabelsChange: (Boolean) -> Unit,
+    onSetWeatherCity: (String) -> Unit,
+    onRefreshWeather: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Surface(
@@ -155,6 +157,8 @@ fun LauncherDrawer(
                         onShowLabelsChange = onShowLabelsChange,
                         onRefresh = onRefresh,
                         onClearRecents = onClearRecents,
+                        onSetWeatherCity = onSetWeatherCity,
+                        onRefreshWeather = onRefreshWeather,
                     )
                 }
             }

@@ -7,14 +7,19 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.Uri
+import android.os.BatteryManager
 import android.os.Build
 import android.provider.Settings
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import dev.utouch.launcher.data.AppEntry
 import dev.utouch.launcher.data.LauncherPrefs
 import dev.utouch.launcher.data.PackageRepository
+import dev.utouch.launcher.data.Place
+import dev.utouch.launcher.data.Weather
+import dev.utouch.launcher.data.WeatherRepository
 import dev.utouch.launcher.data.loadWallpaper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -38,6 +43,14 @@ data class LauncherUiState(
     val useWallpaper: Boolean = true,
     val showLabels: Boolean = true,
     val wallpaper: ImageBitmap? = null,
+    val wallpaperAccent: Color? = null,
+    val weatherCity: String? = null,
+    val weather: Weather? = null,
+    val weatherLoading: Boolean = false,
+    val weatherError: Boolean = false,
+    val batteryLevel: Int? = null,
+    val batteryCharging: Boolean = false,
+    val showCoach: Boolean = false,
     val message: String? = null,
 ) {
     val pinnedApps: List<AppEntry>
@@ -50,6 +63,7 @@ data class LauncherUiState(
 class LauncherViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = PackageRepository(application)
+    private val weatherRepository = WeatherRepository()
     private val prefs = LauncherPrefs(application)
     private val appContext: Context = application.applicationContext
 
@@ -61,9 +75,27 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     }.getOrNull() ?: "1.0"
 
     private var wallpaperJob: Job? = null
+    private var weatherJob: Job? = null
 
     private val packageReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) = reloadApps()
+    }
+
+    private val batteryReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            intent ?: return
+            val level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
+            val scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
+            if (level < 0 || scale <= 0) return
+            val status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
+            _uiState.update {
+                it.copy(
+                    batteryLevel = (level * 100f / scale).toInt().coerceIn(0, 100),
+                    batteryCharging = status == BatteryManager.BATTERY_STATUS_CHARGING ||
+                        status == BatteryManager.BATTERY_STATUS_FULL,
+                )
+            }
+        }
     }
 
     init {
@@ -74,15 +106,21 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                 showLabels = prefs.showLabels,
                 pinnedKeys = prefs.pinnedKeys(),
                 recentKeys = prefs.recentKeys(),
+                weatherCity = prefs.weatherCity,
+                weather = prefs.cachedWeather(),
+                showCoach = !prefs.coachShown,
             )
         }
         registerPackageReceiver()
+        registerBatteryReceiver()
         reloadApps()
         refreshWallpaper()
+        refreshWeather(force = false)
     }
 
     override fun onCleared() {
         runCatching { appContext.unregisterReceiver(packageReceiver) }
+        runCatching { appContext.unregisterReceiver(batteryReceiver) }
         super.onCleared()
     }
 
@@ -189,9 +227,80 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         if (!_uiState.value.useWallpaper) return
         wallpaperJob?.cancel()
         wallpaperJob = viewModelScope.launch {
-            val bitmap = withContext(Dispatchers.IO) { loadWallpaper(appContext) }
-            _uiState.update { it.copy(wallpaper = bitmap) }
+            val wallpaper = withContext(Dispatchers.IO) { loadWallpaper(appContext) }
+            _uiState.update {
+                it.copy(wallpaper = wallpaper?.image, wallpaperAccent = wallpaper?.accent)
+            }
         }
+    }
+
+    // ------------------------------------------------------------- weather
+
+    /** Fetches the forecast when the cached one is older than [CACHE_TTL_MS] (or [force]). */
+    fun refreshWeather(force: Boolean) {
+        if (!prefs.hasWeatherPlace) return
+        val fresh = System.currentTimeMillis() - prefs.weatherUpdatedAt < CACHE_TTL_MS
+        if (!force && fresh && _uiState.value.weather != null) return
+
+        weatherJob?.cancel()
+        _uiState.update { it.copy(weatherLoading = true, weatherError = false) }
+        weatherJob = viewModelScope.launch {
+            val weather = withContext(Dispatchers.IO) {
+                weatherRepository.currentWeather(prefs.weatherLatitude, prefs.weatherLongitude)
+            }
+            if (weather != null) {
+                prefs.saveWeather(weather)
+                _uiState.update { it.copy(weather = weather, weatherLoading = false) }
+            } else {
+                _uiState.update {
+                    it.copy(
+                        weatherLoading = false,
+                        weatherError = it.weather == null,
+                    )
+                }
+            }
+        }
+    }
+
+    /** Resolves [query] through the geocoding API and switches the weather card to that city. */
+    fun setWeatherCity(query: String) {
+        val trimmed = query.trim()
+        if (trimmed.isEmpty()) return
+
+        weatherJob?.cancel()
+        _uiState.update { it.copy(weatherLoading = true, weatherError = false) }
+        weatherJob = viewModelScope.launch {
+            val place: Place? = withContext(Dispatchers.IO) {
+                weatherRepository.geocode(trimmed)
+            }
+            if (place == null) {
+                _uiState.update { it.copy(weatherLoading = false, weatherError = false) }
+                showMessage(appContext.getString(R.string.weather_city_not_found))
+                return@launch
+            }
+
+            prefs.saveWeatherPlace(place)
+            val weather = withContext(Dispatchers.IO) {
+                weatherRepository.currentWeather(place.latitude, place.longitude)
+            }
+            if (weather != null) prefs.saveWeather(weather)
+            _uiState.update {
+                it.copy(
+                    weatherCity = place.name,
+                    weather = weather ?: it.weather,
+                    weatherLoading = false,
+                    weatherError = weather == null,
+                )
+            }
+        }
+    }
+
+    // -------------------------------------------------------------- coach
+
+    fun dismissCoach() {
+        if (prefs.coachShown) return
+        prefs.coachShown = true
+        _uiState.update { it.copy(showCoach = false) }
     }
 
     // ----------------------------------------------------------- plumbing
@@ -202,6 +311,10 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     private fun showMessage(text: String) {
         _uiState.update { it.copy(message = text) }
+    }
+
+    private fun registerBatteryReceiver() {
+        appContext.registerReceiver(batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
     }
 
     private fun registerPackageReceiver() {
@@ -217,5 +330,9 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         } else {
             appContext.registerReceiver(packageReceiver, filter)
         }
+    }
+
+    private companion object {
+        const val CACHE_TTL_MS = 30L * 60L * 1000L
     }
 }

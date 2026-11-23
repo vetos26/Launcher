@@ -58,4 +58,36 @@
     <string name="cannot_launch">Не удалось открыть %1$s</string>
     <string name="cannot_open_settings">Настройки приложения недоступны</string>
     <string name="cannot_uninstall">Не удалось запустить удаление</string>
+
+    <!-- Today scope -->
+    <string name="apps_page_title">Приложения</string>
+    <string name="apps_page_subtitle">Закреплённые и все установленные приложения</string>
+    <string name="weather_title">Погода</string>
+    <string name="weather_unset_title">Погода не настроена</string>
+    <string name="weather_unset_body">Выберите город — лаунчер покажет текущую погоду.</string>
+    <string name="weather_set_city">Выбрать город</string>
+    <string name="weather_refresh">Обновить</string>
+    <string name="weather_retry">Повторить</string>
+    <string name="weather_error">Не удалось загрузить прогноз</string>
+    <string name="weather_city_none">Не задан</string>
+    <string name="weather_city_dialog_title">Город для погоды</string>
+    <string name="weather_city_dialog_hint">Название города</string>
+    <string name="weather_city_not_found">Город не найден</string>
+    <string name="settings_weather">Погода</string>
+    <string name="battery_title">Батарея</string>
+    <string name="battery_charging">Заряжается</string>
+    <string name="coach_title">Лаунчер живёт слева</string>
+    <string name="coach_body">Смахните от левого края, чтобы открыть приложения, недавние и настройки.</string>
+    <string name="coach_got_it">Понятно</string>
+    <string name="weather_clear">Ясно</string>
+    <string name="weather_partly_cloudy">Переменная облачность</string>
+    <string name="weather_overcast">Пасмурно</string>
+    <string name="weather_fog">Туман</string>
+    <string name="weather_drizzle">Морось</string>
+    <string name="weather_rain">Дождь</string>
+    <string name="weather_snow">Снег</string>
+    <string name="weather_showers">Ливни</string>
+    <string name="weather_snow_showers">Снегопады</string>
+    <string name="weather_thunderstorm">Гроза</string>
+    <string name="weather_unknown">Неизвестно</string>
 </resources>

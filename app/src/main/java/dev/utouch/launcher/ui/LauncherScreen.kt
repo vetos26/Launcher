@@ -104,6 +104,7 @@ fun LauncherScreen(viewModel: LauncherViewModel = viewModel()) {
 
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
         viewModel.refreshWallpaper()
+        viewModel.refreshWeather(force = false)
     }
 
     BoxWithConstraints(
@@ -116,9 +117,19 @@ fun LauncherScreen(viewModel: LauncherViewModel = viewModel()) {
 
         HomePane(
             state = state,
-            onOpenLauncher = { animateDrawer(true) },
+            onOpenLauncher = {
+                viewModel.dismissCoach()
+                animateDrawer(true)
+            },
             onLaunch = viewModel::launch,
             onLongPressApp = { selectedApp = it },
+            onOpenWeatherSettings = {
+                tab = DrawerTab.SETTINGS
+                viewModel.dismissCoach()
+                animateDrawer(true)
+            },
+            onRefreshWeather = { viewModel.refreshWeather(force = true) },
+            onDismissCoach = viewModel::dismissCoach,
             modifier = Modifier
                 .fillMaxSize()
                 .graphicsLayer {
@@ -184,6 +195,8 @@ fun LauncherScreen(viewModel: LauncherViewModel = viewModel()) {
             onIncludeSystemAppsChange = viewModel::setIncludeSystemApps,
             onUseWallpaperChange = viewModel::setUseWallpaper,
             onShowLabelsChange = viewModel::setShowLabels,
+            onSetWeatherCity = viewModel::setWeatherCity,
+            onRefreshWeather = { viewModel.refreshWeather(force = true) },
             modifier = Modifier
                 .align(Alignment.CenterStart)
                 .fillMaxHeight()
