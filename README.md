@@ -7,11 +7,18 @@
 Написан на **Kotlin + Jetpack Compose**, без сторонних библиотек (только AndroidX).
 
 ```
-Kotlin 2.0.21 · AGP 8.7.2 · Gradle 8.9 · minSdk 26 · targetSdk 35
+Kotlin 2.0.21 · AGP 8.7.2 · Gradle 8.9 · minSdk 26 · targetSdk 35 · версия 1.1
 ```
 
 ## Что умеет
 
+- **Домашний экран — это скоупы с точками страниц**, как в Unity 8:
+  «Сегодня» и «Приложения», переключаются свайпом вбок.
+- **Скоуп «Сегодня»**: приветствие, часы и дата, погода (Open-Meteo, без ключа API —
+  город выбирается в настройках, прогноз кешируется на 30 минут) и уровень батареи.
+- **Размытые обои**: устройство-обои уменьшаются, размываются box-блюром, а их
+  доминирующий цвет подмешивается в акцентное свечение фона.
+- **Coach mark при первом запуске** — подсказка про свайп от левого края.
 - **Работает как настоящий HOME-лаунчер** — при установке система предложит выбрать его
   лаунчером по умолчанию.
 - **Свайп от левого края** открывает док-панель; домашний экран при этом слегка
@@ -33,7 +40,8 @@ Kotlin 2.0.21 · AGP 8.7.2 · Gradle 8.9 · minSdk 26 · targetSdk 35
 ## Готовый APK
 
 **[Скачать app-debug.apk](https://github.com/vetos26/Launcher/releases/latest/download/app-debug.apk)** — собран
-GitHub Actions (workflow «Android build») и лежит в [релизе v1.0](https://github.com/vetos26/Launcher/releases/tag/v1.0).
+GitHub Actions (workflow «Android build») и лежит в [последнем релизе](https://github.com/vetos26/Launcher/releases/latest).
+Версия 1.1: скоуп «Сегодня» с погодой и батареей, размытые обои, coach mark.
 
 Установка: скачайте файл на телефон, разрешите установку из этого источника и откройте APK.
 Затем выберите лаунчер домашним экраном:
@@ -65,7 +73,8 @@ app/src/main/java/dev/utouch/launcher/
 ├── data/
 │   ├── AppEntry.kt            # модель запускаемой активити
 │   ├── PackageRepository.kt   # чтение PackageManager, рендер иконок
-│   ├── LauncherPrefs.kt       # SharedPreferences: закреплённые, недавние, флаги
+│   ├── LauncherPrefs.kt       # SharedPreferences: закреплённые, недавние, флаги, погода
+│   ├── Weather.kt             # Open-Meteo: геокодинг города и текущая погода
 │   └── ImageTools.kt          # Drawable → Bitmap, доминирующий цвет, обои
 └── ui/
     ├── LauncherScreen.kt      # оркестратор: свайп, скрим, шит, drawer

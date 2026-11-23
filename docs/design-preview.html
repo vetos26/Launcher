@@ -46,6 +46,25 @@
   .menu-btn span::before{top:-5px}.menu-btn span::after{top:5px}
   .board{margin-top:auto;margin-bottom:auto;margin-top:34px;border-radius:26px;
     background:rgba(255,255,255,.055);border:1px solid var(--stroke);padding:16px 12px 12px}
+  .card{margin-top:26px;border-radius:24px;background:rgba(255,255,255,.055);
+    border:1px solid var(--stroke);padding:18px 20px}
+  .card-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;
+    color:rgba(233,84,32,.9);font-weight:600}
+  .card-label.muted{color:var(--text2)}
+  .weather{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+  .temp{font-size:44px;font-weight:300;letter-spacing:-1.5px;line-height:1}
+  .city{font-size:12px;margin-top:6px}
+  .cond{font-size:11px;color:var(--text2);margin-top:2px}
+  .glyph{font-size:44px;line-height:1}
+  .link{font-size:11px;color:var(--orange);margin-top:10px}
+  .battery-row{display:flex;justify-content:space-between;align-items:center}
+  .pct{font-size:15px;font-weight:500}
+  .bar{height:6px;border-radius:3px;background:rgba(255,255,255,.12);
+    margin-top:10px;overflow:hidden}
+  .bar i{display:block;height:100%;border-radius:3px;background:var(--orange)}
+  .dots{display:flex;gap:6px;justify-content:center;margin-bottom:14px}
+  .dots i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.28)}
+  .dots i.on{width:16px;border-radius:3px;background:var(--orange)}
   .board-head{display:flex;align-items:baseline;justify-content:space-between;padding:0 8px 8px}
   .board-head h2{font-size:15px;font-weight:600;margin:0}
   .board-head small{font-size:11px;color:var(--text3)}
@@ -122,14 +141,54 @@
 <body>
 <header>
   <h1>Ubuntu Touch Launcher — <b>дизайн-превью</b></h1>
-  <p>Статичный HTML-макет интерфейса. Само приложение — Kotlin + Jetpack Compose в каталоге <code>app/</code>.</p>
+  <p>Статичный HTML-макет интерфейса: скоупы «Сегодня» и «Приложения», док-панель, лист долгого нажатия.<br>Само приложение — Kotlin + Jetpack Compose в каталоге <code>app/</code>.</p>
 </header>
 
 <div class="stage">
 
-  <!-- 1. Home -->
+  <!-- 1. Today scope -->
   <div class="phone-wrap">
-    <div class="phone-label">Домашний экран</div>
+    <div class="phone-label">Скоуп «Сегодня»</div>
+    <div class="phone">
+      <div class="home">
+        <div class="menu-btn"><span></span></div>
+        <div class="greet">Добрый вечер</div>
+        <div class="clock">21:34</div>
+        <div class="date">воскресенье, 23 ноября 2026 г.</div>
+
+        <div class="card">
+          <div class="card-label">Погода</div>
+          <div class="weather">
+            <div>
+              <div class="temp">12°</div>
+              <div class="city">Франкфурт-на-Майне</div>
+              <div class="cond">Переменная облачность</div>
+            </div>
+            <div class="glyph">⛅</div>
+          </div>
+          <div class="link">Обновить</div>
+        </div>
+
+        <div class="card">
+          <div class="battery-row">
+            <span class="card-label muted">Батарея</span>
+            <span class="pct">78%</span>
+          </div>
+          <div class="bar"><i style="width:78%"></i></div>
+        </div>
+
+        <div class="hint">
+          <div class="dots"><i class="on"></i><i></i></div>
+          <div class="pill"><i></i>Открыть лаунчер</div>
+          <small>Смахните от левого края для всех приложений</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Apps scope -->
+  <div class="phone-wrap">
+    <div class="phone-label">Скоуп «Приложения»</div>
     <div class="phone">
       <div class="home">
         <div class="menu-btn"><span></span></div>
@@ -152,8 +211,9 @@
         </div>
 
         <div class="hint">
-          <small>Смахните от левого края для всех приложений</small>
+          <div class="dots"><i></i><i class="on"></i></div>
           <div class="pill"><i></i>Открыть лаунчер</div>
+          <small>Смахните от левого края для всех приложений</small>
         </div>
       </div>
     </div>
@@ -242,7 +302,7 @@
 
 <footer>
   Палитра: Ubuntu orange <code>#E95420</code>, aubergine <code>#772953</code>, Suru surface <code>#1B1B20</code>.
-  Скругления 18–32 dp, полупрозрачные «плиты» иконок — как в Unity 8.
+  Скругления 18–32 dp, полупрозрачные «плиты» иконок — как в Unity 8. Погода — Open-Meteo, без ключа API.
 </footer>
 </body>
 </html>
