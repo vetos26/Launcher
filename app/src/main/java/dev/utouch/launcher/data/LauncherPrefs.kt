@@ -1,6 +1,8 @@
 package dev.utouch.launcher.data
 
 import android.content.Context
+import org.json.JSONArray
+import org.json.JSONObject
 
 /**
  * Small persistence layer: pinned apps, recently opened apps and the display settings.
@@ -50,6 +52,40 @@ class LauncherPrefs(context: Context) {
         val updated = (listOf(key) + recentKeys().filterNot { it == key }).take(MAX_RECENTS)
         saveRecents(updated)
         return updated
+    }
+
+    // ------------------------------------------------------------- widgets
+
+    var widgetsEnabled: Boolean
+        get() = prefs.getBoolean(KEY_WIDGETS_ENABLED, false)
+        set(value) = prefs.edit().putBoolean(KEY_WIDGETS_ENABLED, value).apply()
+
+    fun widgets(): List<WidgetRecord> {
+        val raw = prefs.getString(KEY_WIDGETS, null) ?: return emptyList()
+        return runCatching {
+            val array = JSONArray(raw)
+            (0 until array.length()).mapNotNull { index ->
+                val item = array.optJSONObject(index) ?: return@mapNotNull null
+                WidgetRecord(
+                    id = item.optInt("id", -1),
+                    provider = item.optString("provider"),
+                    spanY = item.optInt("spanY", 2),
+                )
+            }.filter { it.id >= 0 }
+        }.getOrDefault(emptyList())
+    }
+
+    fun saveWidgets(records: List<WidgetRecord>) {
+        val array = JSONArray()
+        records.forEach { record ->
+            array.put(
+                JSONObject()
+                    .put("id", record.id)
+                    .put("provider", record.provider)
+                    .put("spanY", record.spanY),
+            )
+        }
+        prefs.edit().putString(KEY_WIDGETS, array.toString()).apply()
     }
 
     // ------------------------------------------------------------- weather
@@ -107,6 +143,8 @@ class LauncherPrefs(context: Context) {
         const val KEY_LABELS = "show_labels"
         const val KEY_COACH = "coach_shown"
         const val KEY_HIDDEN = "hidden_apps"
+        const val KEY_WIDGETS = "widgets"
+        const val KEY_WIDGETS_ENABLED = "widgets_enabled"
         const val KEY_WEATHER_CITY = "weather_city"
         const val KEY_WEATHER_LAT = "weather_lat"
         const val KEY_WEATHER_LON = "weather_lon"

@@ -5,6 +5,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
@@ -54,6 +55,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -69,6 +73,8 @@ import dev.utouch.launcher.R
 import dev.utouch.launcher.data.AppEntry
 import dev.utouch.launcher.data.Contact
 import dev.utouch.launcher.data.SystemSetting
+import dev.utouch.launcher.data.WidgetHostHolder
+import dev.utouch.launcher.data.WidgetRecord
 import dev.utouch.launcher.ui.theme.TextPrimary
 import dev.utouch.launcher.ui.theme.TextSecondary
 import dev.utouch.launcher.ui.theme.TextTertiary
@@ -103,6 +109,11 @@ fun LauncherDrawer(
     onContactsPermissionResult: (Boolean) -> Unit,
     onToggleHidden: (String) -> Unit,
     onOpenHomeSettings: () -> Unit,
+    widgetHolder: WidgetHostHolder?,
+    onEnableWidgets: () -> Unit,
+    onAddWidget: (WidgetRecord) -> Unit,
+    onRemoveWidget: (Int) -> Unit,
+    onSetWidgetSpan: (Int, Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val contactsLauncher = rememberLauncherForActivityResult(
@@ -183,6 +194,15 @@ fun LauncherDrawer(
                         onLaunch = onLaunch,
                         onLongPressApp = onLongPressApp,
                         onTogglePin = onTogglePin,
+                    )
+
+                    DrawerTab.WIDGETS -> WidgetsScope(
+                        state = state,
+                        holder = widgetHolder,
+                        onEnableWidgets = onEnableWidgets,
+                        onAddWidget = onAddWidget,
+                        onRemoveWidget = onRemoveWidget,
+                        onSetWidgetSpan = onSetWidgetSpan,
                     )
 
                     DrawerTab.SETTINGS -> SettingsScope(
@@ -486,6 +506,26 @@ fun ScopeEmptyState(title: String, body: String) {
     }
 }
 
+/** Four rounded squares, drawn locally because material-icons-core has no widget glyph. */
+@Composable
+private fun WidgetsDashIcon(tint: Color) {
+    Canvas(modifier = Modifier.size(19.dp)) {
+        val gap = size.minDimension * 0.16f
+        val cell = (size.minDimension - gap) / 2f
+        val corner = CornerRadius(cell * 0.3f, cell * 0.3f)
+        for (row in 0..1) {
+            for (column in 0..1) {
+                drawRoundRect(
+                    color = tint,
+                    topLeft = Offset(column * (cell + gap), row * (cell + gap)),
+                    size = Size(cell, cell),
+                    cornerRadius = corner,
+                )
+            }
+        }
+    }
+}
+
 /** Ubuntu Touch style "dash" at the bottom of the drawer. */
 @Composable
 private fun DrawerDash(selected: DrawerTab, onSelect: (DrawerTab) -> Unit) {
@@ -509,6 +549,11 @@ private fun DrawerDash(selected: DrawerTab, onSelect: (DrawerTab) -> Unit) {
             onClick = { onSelect(DrawerTab.RECENTS) },
         )
         DashItem(
+            labelRes = R.string.tab_widgets,
+            selected = selected == DrawerTab.WIDGETS,
+            onClick = { onSelect(DrawerTab.WIDGETS) },
+        ) { tint -> WidgetsDashIcon(tint) }
+        DashItem(
             icon = Icons.Default.Settings,
             labelRes = R.string.tab_settings,
             selected = selected == DrawerTab.SETTINGS,
@@ -519,10 +564,11 @@ private fun DrawerDash(selected: DrawerTab, onSelect: (DrawerTab) -> Unit) {
 
 @Composable
 private fun DashItem(
-    icon: ImageVector,
     @StringRes labelRes: Int,
     selected: Boolean,
     onClick: () -> Unit,
+    icon: ImageVector? = null,
+    customIcon: (@Composable (Color) -> Unit)? = null,
 ) {
     Column(
         modifier = Modifier
@@ -531,12 +577,22 @@ private fun DashItem(
             .padding(horizontal = 14.dp, vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = stringResource(labelRes),
-            tint = if (selected) UbuntuOrange else TextSecondary,
-            modifier = Modifier.size(21.dp),
-        )
+        val tint = if (selected) UbuntuOrange else TextSecondary
+        when {
+            icon != null -> Icon(
+                imageVector = icon,
+                contentDescription = stringResource(labelRes),
+                tint = tint,
+                modifier = Modifier.size(21.dp),
+            )
+
+            customIcon != null -> Box(
+                modifier = Modifier.size(21.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                customIcon(tint)
+            }
+        }
         Spacer(Modifier.height(3.dp))
         Text(
             text = stringResource(labelRes),

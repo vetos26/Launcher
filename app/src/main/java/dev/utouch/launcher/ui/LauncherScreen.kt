@@ -49,6 +49,7 @@ import dev.utouch.launcher.DrawerTab
 import dev.utouch.launcher.LauncherViewModel
 import dev.utouch.launcher.data.AppEntry
 import dev.utouch.launcher.data.AppShortcut
+import dev.utouch.launcher.data.WidgetHostHolder
 import dev.utouch.launcher.ui.theme.TextPrimary
 import kotlinx.coroutines.launch
 
@@ -62,6 +63,7 @@ fun LauncherScreen(viewModel: LauncherViewModel = viewModel()) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
+    val widgetHolder = remember { WidgetHostHolder(context) }
     val drawerProgress = remember { Animatable(0f) }
     var selectedApp by remember { mutableStateOf<AppEntry?>(null) }
     var tab by rememberSaveable { mutableStateOf(DrawerTab.APPS) }
@@ -108,6 +110,9 @@ fun LauncherScreen(viewModel: LauncherViewModel = viewModel()) {
         viewModel.refreshWallpaper()
         viewModel.refreshWeather(force = false)
     }
+
+    LifecycleEventEffect(Lifecycle.Event.ON_START) { widgetHolder.start() }
+    LifecycleEventEffect(Lifecycle.Event.ON_STOP) { widgetHolder.stop() }
 
     BoxWithConstraints(
         modifier = Modifier
@@ -205,6 +210,11 @@ fun LauncherScreen(viewModel: LauncherViewModel = viewModel()) {
             onContactsPermissionResult = viewModel::setContactsAllowed,
             onToggleHidden = viewModel::toggleHidden,
             onOpenHomeSettings = viewModel::openHomeSettings,
+            widgetHolder = widgetHolder,
+            onEnableWidgets = { viewModel.setWidgetsEnabled(true) },
+            onAddWidget = viewModel::addWidget,
+            onRemoveWidget = viewModel::removeWidget,
+            onSetWidgetSpan = viewModel::setWidgetSpan,
             modifier = Modifier
                 .align(Alignment.CenterStart)
                 .fillMaxHeight()

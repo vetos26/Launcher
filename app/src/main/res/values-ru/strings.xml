@@ -125,4 +125,23 @@
     <string name="sys_language">Язык и ввод</string>
     <string name="sys_accessibility">Специальные возможности</string>
     <string name="sys_about">О телефоне</string>
+
+    <!-- Widgets -->
+    <string name="tab_widgets">Виджеты</string>
+    <string name="widgets_title">Виджеты</string>
+    <string name="widgets_subtitle">Бета · отдельный экран</string>
+    <string name="widgets_disabled_title">Виджеты выключены</string>
+    <string name="widgets_disabled_body">Виджеты — бета-функция. Включите её, чтобы размещать виджеты приложений на отдельном экране — домашние скоупы останутся нетронутыми.</string>
+    <string name="widgets_enable">Включить виджеты</string>
+    <string name="widgets_empty_title">Пока нет виджетов</string>
+    <string name="widgets_empty_body">Добавьте виджет из установленного приложения. Он будет жить только на этом экране.</string>
+    <string name="widgets_add">Добавить виджет</string>
+    <string name="widgets_edit">Изменить</string>
+    <string name="widgets_done">Готово</string>
+    <string name="widgets_remove">Удалить</string>
+    <string name="widgets_height">Высота</string>
+    <string name="widgets_missing_title">Виджет недоступен</string>
+    <string name="widgets_missing_body">Провайдер удалён или виджет повреждён. Удалите его здесь.</string>
+    <string name="widgets_picker_title">Выберите виджет</string>
+    <string name="widgets_no_providers">На устройстве нет доступных виджетов</string>
 </resources>

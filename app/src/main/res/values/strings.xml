@@ -125,4 +125,23 @@
     <string name="sys_language">Language and input</string>
     <string name="sys_accessibility">Accessibility</string>
     <string name="sys_about">About phone</string>
+
+    <!-- Widgets -->
+    <string name="tab_widgets">Widgets</string>
+    <string name="widgets_title">Widgets</string>
+    <string name="widgets_subtitle">Beta · separate screen</string>
+    <string name="widgets_disabled_title">Widgets are off</string>
+    <string name="widgets_disabled_body">Widgets are a beta feature. Turn them on to place app widgets on their own screen — the home scopes stay untouched.</string>
+    <string name="widgets_enable">Turn widgets on</string>
+    <string name="widgets_empty_title">No widgets yet</string>
+    <string name="widgets_empty_body">Add a widget from an installed app. It will live on this screen only.</string>
+    <string name="widgets_add">Add widget</string>
+    <string name="widgets_edit">Edit</string>
+    <string name="widgets_done">Done</string>
+    <string name="widgets_remove">Remove</string>
+    <string name="widgets_height">Height</string>
+    <string name="widgets_missing_title">Widget unavailable</string>
+    <string name="widgets_missing_body">Its provider was uninstalled or the widget got broken. Remove it here.</string>
+    <string name="widgets_picker_title">Choose a widget</string>
+    <string name="widgets_no_providers">No widgets available on this device</string>
 </resources>

@@ -29,6 +29,7 @@ import dev.utouch.launcher.data.ShortcutRepository
 import dev.utouch.launcher.data.SystemSetting
 import dev.utouch.launcher.data.Weather
 import dev.utouch.launcher.data.WeatherRepository
+import dev.utouch.launcher.data.WidgetRecord
 import dev.utouch.launcher.data.loadWallpaper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -41,13 +42,15 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /** Tabs of the launcher drawer, mirroring the Ubuntu Touch "dash". */
-enum class DrawerTab { APPS, RECENTS, SETTINGS }
+enum class DrawerTab { APPS, RECENTS, WIDGETS, SETTINGS }
 
 data class LauncherUiState(
     val loading: Boolean = true,
     val apps: List<AppEntry> = emptyList(),
     val pinnedKeys: List<String> = emptyList(),
     val hiddenKeys: Set<String> = emptySet(),
+    val widgets: List<WidgetRecord> = emptyList(),
+    val widgetsEnabled: Boolean = false,
     val recentKeys: List<String> = emptyList(),
     val query: String = "",
     val includeSystemApps: Boolean = true,
@@ -122,6 +125,8 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                 showLabels = prefs.showLabels,
                 pinnedKeys = prefs.pinnedKeys(),
                 hiddenKeys = prefs.hiddenKeys(),
+                widgets = prefs.widgets(),
+                widgetsEnabled = prefs.widgetsEnabled,
                 recentKeys = prefs.recentKeys(),
                 contactsAllowed = ContextCompat.checkSelfPermission(
                     appContext,
@@ -239,6 +244,40 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             _uiState.update { it.copy(recentKeys = prefs.pushRecent(app.key)) }
         } else {
             showMessage(appContext.getString(R.string.cannot_launch, app.label))
+        }
+    }
+
+    // ----------------------------------------------------------- widgets
+
+    fun setWidgetsEnabled(value: Boolean) {
+        prefs.widgetsEnabled = value
+        _uiState.update { it.copy(widgetsEnabled = value) }
+    }
+
+    fun addWidget(record: WidgetRecord) {
+        _uiState.update { state ->
+            if (state.widgets.any { it.id == record.id }) return@update state
+            val widgets = state.widgets + record
+            prefs.saveWidgets(widgets)
+            state.copy(widgets = widgets, widgetsEnabled = true)
+        }
+    }
+
+    fun removeWidget(widgetId: Int) {
+        _uiState.update { state ->
+            val widgets = state.widgets.filterNot { it.id == widgetId }
+            prefs.saveWidgets(widgets)
+            state.copy(widgets = widgets)
+        }
+    }
+
+    fun setWidgetSpan(widgetId: Int, spanY: Int) {
+        _uiState.update { state ->
+            val widgets = state.widgets.map {
+                if (it.id == widgetId) it.copy(spanY = spanY) else it
+            }
+            prefs.saveWidgets(widgets)
+            state.copy(widgets = widgets)
         }
     }
 
