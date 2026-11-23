@@ -46,12 +46,20 @@ jobs:
         if: failure()
         shell: bash
         run: |
+          set +e
           {
             echo "## Gradle build output (tail)"
             echo '```'
             tail -c 50000 build.log
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
+
+          # Step summaries are not readable through the API, annotations are. Emit the
+          # compiler output as one multi-line annotation so CI failures can be inspected.
+          combined=$(grep -E "^(e|error): " build.log | head -40 | awk '{gsub(/%/,"%25"); printf "%s%%0A", $0}')
+          if [ -n "$combined" ]; then
+            echo "::error title=Gradle errors::$combined"
+          fi
 
       - name: Summarize build
         if: success()
