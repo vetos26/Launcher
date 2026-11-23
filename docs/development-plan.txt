@@ -350,7 +350,6 @@
      SettingsPane.kt      скоуп настроек
      theme/               палитра Ubuntu, типографика, формы
  docs/design-preview.html статичный HTML-макет всех экранов
- docs/plan-2026-11-24.md  тот же план на 24.11 в markdown
  docs/development-plan.txt этот файл
 
 ================================================================================
