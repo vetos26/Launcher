@@ -92,6 +92,15 @@
   .drawer{position:absolute;top:0;left:0;bottom:0;width:88%;background:var(--panel);
     border-radius:0 32px 32px 0;border-right:1px solid var(--stroke);
     box-shadow:28px 0 60px rgba(0,0,0,.6);padding:38px 14px 12px;display:flex;flex-direction:column}
+  .result{display:flex;align-items:center;gap:12px;padding:9px 10px;border-radius:16px}
+  .result .ico.sm{width:34px;height:34px;border-radius:10px;font-size:14px}
+  .result .txt{flex:1;min-width:0}
+  .result .txt b{display:block;font-size:13px;font-weight:500}
+  .result .txt small{display:block;font-size:10px;color:var(--text3);white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis}
+  .chev{color:var(--text3);font-size:14px}
+  .avatar{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.12);
+    display:grid;place-items:center;font-size:13px;font-weight:600}
   .search{display:flex;gap:8px;align-items:center}
   .field{flex:1;height:44px;border-radius:22px;background:var(--tile);border:1px solid var(--stroke);
     display:flex;align-items:center;gap:10px;padding:0 14px;color:var(--text3);font-size:13px}
@@ -141,7 +150,7 @@
 <body>
 <header>
   <h1>Ubuntu Touch Launcher — <b>дизайн-превью</b></h1>
-  <p>Статичный HTML-макет интерфейса: скоупы «Сегодня» и «Приложения», док-панель, лист долгого нажатия.<br>Само приложение — Kotlin + Jetpack Compose в каталоге <code>app/</code>.</p>
+  <p>Статичный HTML-макет интерфейса: скоупы «Сегодня» и «Приложения», универсальный поиск, док-панель, лист долгого нажатия.<br>Само приложение — Kotlin + Jetpack Compose в каталоге <code>app/</code>.</p>
 </header>
 
 <div class="stage">
@@ -219,7 +228,53 @@
     </div>
   </div>
 
-  <!-- 2. Drawer -->
+  <!-- 3. Search -->
+  <div class="phone-wrap">
+    <div class="phone-label">Универсальный поиск</div>
+    <div class="phone">
+      <div class="drawer-home"></div>
+      <div class="scrim"></div>
+      <div class="drawer">
+        <div class="search">
+          <div class="field" style="color:var(--text)">telegram</div>
+          <div class="close">✕</div>
+        </div>
+        <div class="scope">
+          <div class="sect">Приложения</div>
+          <div class="result">
+            <div class="ico sm" style="background:linear-gradient(150deg,#4bb6c9,#2b7f92)">✈</div>
+            <div class="txt"><b>Телеграм</b><small>org.telegram.messenger</small></div>
+            <span class="chev">›</span>
+          </div>
+          <div class="sect">Контакты</div>
+          <div class="result">
+            <div class="avatar">И</div>
+            <div class="txt"><b>Иван Петров</b><small>+7 916 000-00-00</small></div>
+            <span class="chev">›</span>
+          </div>
+          <div class="sect">Настройки</div>
+          <div class="result">
+            <div class="ico sm" style="background:rgba(255,255,255,.08);color:var(--text2)">⚙</div>
+            <div class="txt"><b>Приложения</b></div>
+            <span class="chev">›</span>
+          </div>
+          <div class="sect">Интернет</div>
+          <div class="result">
+            <div class="ico sm" style="background:rgba(255,255,255,.08);color:var(--text2)">⌕</div>
+            <div class="txt"><b>Найти «telegram» в интернете</b></div>
+            <span class="chev">›</span>
+          </div>
+        </div>
+        <div class="dash">
+          <div class="on"><div class="dot"></div>Приложения</div>
+          <div><div class="dot h"></div>Недавние</div>
+          <div><div class="dot s"></div>Настройки</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Drawer -->
   <div class="phone-wrap">
     <div class="phone-label">Док-панель (drawer)</div>
     <div class="phone">
@@ -273,7 +328,7 @@
     </div>
   </div>
 
-  <!-- 3. Long press sheet -->
+  <!-- 5. Long press sheet -->
   <div class="phone-wrap">
     <div class="phone-label">Долгое нажатие на иконку</div>
     <div class="phone">
