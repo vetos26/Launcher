@@ -3,7 +3,6 @@ package dev.utouch.launcher.data
 import android.content.Context
 import android.content.pm.LauncherApps
 import android.content.pm.ShortcutInfo
-import android.graphics.drawable.Icon
 import android.os.Process
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
@@ -34,6 +33,7 @@ class ShortcutRepository(private val context: Context) {
                     LauncherApps.ShortcutQuery.FLAG_MATCH_PINNED,
             )
         }
+        val density = context.resources.displayMetrics.densityDpi
         launcherApps.getShortcuts(query, Process.myUserHandle())
             .orEmpty()
             .asSequence()
@@ -45,7 +45,7 @@ class ShortcutRepository(private val context: Context) {
                     label = (info.shortLabel ?: info.longLabel)?.toString()?.trim()
                         .orEmpty()
                         .ifEmpty { info.id },
-                    icon = loadIcon(info.icon),
+                    icon = loadIcon(launcherApps, info, density),
                     info = info,
                 )
             }
@@ -58,7 +58,12 @@ class ShortcutRepository(private val context: Context) {
         true
     }.getOrDefault(false)
 
-    private fun loadIcon(icon: Icon?): ImageBitmap? = runCatching {
-        icon?.loadDrawable(context)?.renderBitmap(96)?.asImageBitmap()
+    /** Icons of shortcuts are only reachable through [LauncherApps]. */
+    private fun loadIcon(
+        launcherApps: LauncherApps,
+        info: ShortcutInfo,
+        density: Int,
+    ): ImageBitmap? = runCatching {
+        launcherApps.getShortcutIconDrawable(info, density)?.renderBitmap(96)?.asImageBitmap()
     }.getOrNull()
 }
