@@ -76,6 +76,7 @@ fun WidgetsScope(
     onAddWidget: (WidgetRecord) -> Unit,
     onRemoveWidget: (Int) -> Unit,
     onSetWidgetSpan: (Int, Int) -> Unit,
+    onToggleHomeWidget: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var pickerOpen by remember { mutableStateOf(false) }
@@ -211,6 +212,8 @@ fun WidgetsScope(
                         record = record,
                         holder = holder,
                         editMode = editMode,
+                        onHome = record.id in state.homeWidgetIds,
+                        onToggleHome = { onToggleHomeWidget(record.id) },
                         onRemove = {
                             holder?.delete(record.id)
                             onRemoveWidget(record.id)
@@ -241,6 +244,8 @@ private fun WidgetCard(
     record: WidgetRecord,
     holder: WidgetHostHolder?,
     editMode: Boolean,
+    onHome: Boolean,
+    onToggleHome: () -> Unit,
     onRemove: () -> Unit,
     onSetSpan: (Int) -> Unit,
 ) {
@@ -325,8 +330,16 @@ private fun WidgetCard(
                         )
                         Spacer(Modifier.weight(1f))
                         SmallButton(
+                            icon = Icons.Default.Home,
+                            label = null,
+                            contentDescription = stringResource(R.string.widgets_on_home),
+                            highlighted = onHome,
+                            onClick = onToggleHome,
+                        )
+                        SmallButton(
                             icon = Icons.Default.Delete,
                             label = null,
+                            contentDescription = stringResource(R.string.widgets_remove),
                             onClick = onRemove,
                         )
                     }
@@ -340,6 +353,8 @@ private fun WidgetCard(
 private fun SmallButton(
     label: String? = null,
     icon: androidx.compose.ui.graphics.vector.ImageVector? = null,
+    contentDescription: String? = null,
+    highlighted: Boolean = false,
     enabled: Boolean = true,
     onClick: () -> Unit,
 ) {
@@ -348,9 +363,11 @@ private fun SmallButton(
             .size(32.dp)
             .clip(CircleShape)
             .background(
-                androidx.compose.ui.graphics.Color.White.copy(
-                    alpha = if (enabled) 0.10f else 0.04f,
-                ),
+                when {
+                    highlighted -> UbuntuOrange.copy(alpha = 0.85f)
+                    enabled -> androidx.compose.ui.graphics.Color.White.copy(alpha = 0.10f)
+                    else -> androidx.compose.ui.graphics.Color.White.copy(alpha = 0.04f)
+                },
             )
             .clickable(enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center,
@@ -358,8 +375,12 @@ private fun SmallButton(
         when {
             icon != null -> Icon(
                 imageVector = icon,
-                contentDescription = stringResource(R.string.widgets_remove),
-                tint = if (enabled) UbuntuOrange else TextTertiary,
+                contentDescription = contentDescription,
+                tint = when {
+                    highlighted -> androidx.compose.ui.graphics.Color.White
+                    enabled -> UbuntuOrange
+                    else -> TextTertiary
+                },
                 modifier = Modifier.size(16.dp),
             )
 
@@ -527,4 +548,53 @@ private fun defaultSpan(provider: AppWidgetProviderInfo): Int = when {
     provider.minHeight >= 240 -> 3
     provider.minHeight >= 140 -> 2
     else -> 1
+}
+
+/**
+ * A widget pinned to the home screen. Rendered in its own [WidgetHostHolder.SLOT_HOME] slot so
+ * the same widget can also be open in the widgets scope without two parents fighting for one view.
+ */
+@Composable
+fun HomeWidgetSlot(
+    record: WidgetRecord,
+    holder: WidgetHostHolder?,
+    modifier: Modifier = Modifier,
+) {
+    val info = remember(record.id) { holder?.providerInfo(record.id) }
+    if (info == null) {
+        // Provider uninstalled: the widgets scope reports it, the home screen just stays clean.
+        return
+    }
+
+    BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
+        val widthDp = maxWidth.value.toInt().coerceAtLeast(1)
+        val heightDp = widgetHeightDp(record, info.minHeight)
+        val view = remember(record.id) {
+            holder?.createView(record, WidgetHostHolder.SLOT_HOME)
+        }
+
+        Surface(
+            shape = RoundedCornerShape(24.dp),
+            color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.05f),
+            border = BorderStroke(1.dp, androidx.compose.ui.graphics.Color.White.copy(alpha = 0.07f)),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(heightDp.dp)
+                    .clip(RoundedCornerShape(24.dp)),
+            ) {
+                if (view != null) {
+                    LaunchedEffect(record.spanY, widthDp, heightDp) {
+                        holder?.resize(record, widthDp, heightDp)
+                    }
+                    AndroidView(
+                        factory = { view },
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
+            }
+        }
+    }
 }

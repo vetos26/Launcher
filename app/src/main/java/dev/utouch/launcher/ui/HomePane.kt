@@ -9,6 +9,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -29,6 +30,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -67,6 +69,8 @@ import dev.utouch.launcher.LauncherUiState
 import dev.utouch.launcher.R
 import dev.utouch.launcher.data.AppEntry
 import dev.utouch.launcher.data.Weather
+import dev.utouch.launcher.data.WidgetHostHolder
+import dev.utouch.launcher.data.WidgetRecord
 import dev.utouch.launcher.data.weatherDescriptionRes
 import dev.utouch.launcher.data.weatherGlyph
 import dev.utouch.launcher.ui.theme.TextPrimary
@@ -94,6 +98,8 @@ fun HomePane(
     onOpenWeatherSettings: () -> Unit,
     onRefreshWeather: () -> Unit,
     onDismissCoach: () -> Unit,
+    widgetHolder: WidgetHostHolder?,
+    homeWidgets: List<WidgetRecord>,
     modifier: Modifier = Modifier,
 ) {
     val pagerState = rememberPagerState(pageCount = { 2 })
@@ -117,6 +123,8 @@ fun HomePane(
                         onOpenLauncher = onOpenLauncher,
                         onOpenWeatherSettings = onOpenWeatherSettings,
                         onRefreshWeather = onRefreshWeather,
+                        widgetHolder = widgetHolder,
+                        homeWidgets = homeWidgets,
                         modifier = Modifier.fillMaxSize(),
                     )
 
@@ -147,6 +155,8 @@ private fun TodayPage(
     onOpenLauncher: () -> Unit,
     onOpenWeatherSettings: () -> Unit,
     onRefreshWeather: () -> Unit,
+    widgetHolder: WidgetHostHolder?,
+    homeWidgets: List<WidgetRecord>,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -165,7 +175,23 @@ private fun TodayPage(
         Spacer(Modifier.height(14.dp))
         BatteryCard(level = state.batteryLevel, charging = state.batteryCharging)
 
-        Spacer(Modifier.weight(1f))
+        if (homeWidgets.isEmpty()) {
+            Spacer(Modifier.weight(1f))
+        } else {
+            Spacer(Modifier.height(16.dp))
+            // Widgets get every pixel the cards above left free; extra ones scroll.
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                homeWidgets.forEach { record ->
+                    HomeWidgetSlot(record = record, holder = widgetHolder)
+                }
+                Spacer(Modifier.height(8.dp))
+            }
+        }
     }
 }
 

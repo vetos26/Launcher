@@ -12,8 +12,8 @@ android {
         applicationId = "dev.utouch.launcher"
         minSdk = 26
         targetSdk = 35
-        versionCode = 4
-        versionName = "1.3"
+        versionCode = 5
+        versionName = "1.4"
         resourceConfigurations += listOf("en", "ru")
     }
 

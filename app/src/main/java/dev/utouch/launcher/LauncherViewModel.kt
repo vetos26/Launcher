@@ -51,6 +51,7 @@ data class LauncherUiState(
     val hiddenKeys: Set<String> = emptySet(),
     val widgets: List<WidgetRecord> = emptyList(),
     val widgetsEnabled: Boolean = false,
+    val homeWidgetIds: List<Int> = emptyList(),
     val recentKeys: List<String> = emptyList(),
     val query: String = "",
     val includeSystemApps: Boolean = true,
@@ -127,6 +128,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                 hiddenKeys = prefs.hiddenKeys(),
                 widgets = prefs.widgets(),
                 widgetsEnabled = prefs.widgetsEnabled,
+                homeWidgetIds = prefs.homeWidgetIds(),
                 recentKeys = prefs.recentKeys(),
                 contactsAllowed = ContextCompat.checkSelfPermission(
                     appContext,
@@ -266,8 +268,23 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     fun removeWidget(widgetId: Int) {
         _uiState.update { state ->
             val widgets = state.widgets.filterNot { it.id == widgetId }
+            val home = state.homeWidgetIds - widgetId
             prefs.saveWidgets(widgets)
-            state.copy(widgets = widgets)
+            prefs.saveHomeWidgetIds(home)
+            state.copy(widgets = widgets, homeWidgetIds = home)
+        }
+    }
+
+    /** Pins or unpins a widget on the home screen (the widgets scope stays the editor). */
+    fun toggleHomeWidget(widgetId: Int) {
+        _uiState.update { state ->
+            val home = if (widgetId in state.homeWidgetIds) {
+                state.homeWidgetIds - widgetId
+            } else {
+                state.homeWidgetIds + widgetId
+            }
+            prefs.saveHomeWidgetIds(home)
+            state.copy(homeWidgetIds = home)
         }
     }
 

@@ -75,6 +75,18 @@ class LauncherPrefs(context: Context) {
         }.getOrDefault(emptyList())
     }
 
+    /** Widget ids pinned to the home screen (a subset of [widgets]). */
+    fun homeWidgetIds(): List<Int> =
+        prefs.getString(KEY_WIDGETS_HOME, null)
+            ?.split(',')
+            ?.mapNotNull { it.trim().toIntOrNull() }
+            ?.filter { it >= 0 }
+            ?: emptyList()
+
+    fun saveHomeWidgetIds(ids: List<Int>) {
+        prefs.edit().putString(KEY_WIDGETS_HOME, ids.joinToString(",")).apply()
+    }
+
     fun saveWidgets(records: List<WidgetRecord>) {
         val array = JSONArray()
         records.forEach { record ->
@@ -145,6 +157,7 @@ class LauncherPrefs(context: Context) {
         const val KEY_HIDDEN = "hidden_apps"
         const val KEY_WIDGETS = "widgets"
         const val KEY_WIDGETS_ENABLED = "widgets_enabled"
+        const val KEY_WIDGETS_HOME = "widgets_home"
         const val KEY_WEATHER_CITY = "weather_city"
         const val KEY_WEATHER_LAT = "weather_lat"
         const val KEY_WEATHER_LON = "weather_lon"

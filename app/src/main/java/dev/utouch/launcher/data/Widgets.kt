@@ -35,7 +35,7 @@ class WidgetHostHolder(private val context: Context) {
 
     private val host = AppWidgetHost(context, HOST_ID)
     private val manager: AppWidgetManager = AppWidgetManager.getInstance(context)
-    private val viewCache = HashMap<Int, AppWidgetHostView>()
+    private val viewCache = HashMap<String, AppWidgetHostView>()
     private val iconCache = HashMap<String, ImageBitmap?>()
 
     fun start() {
@@ -47,8 +47,12 @@ class WidgetHostHolder(private val context: Context) {
     }
 
     fun delete(widgetId: Int) {
-        viewCache.remove(widgetId)
+        forget(widgetId)
         runCatching { host.deleteAppWidgetId(widgetId) }
+    }
+
+    private fun forget(widgetId: Int) {
+        viewCache.keys.filter { it.startsWith("$widgetId|") }.forEach(viewCache::remove)
     }
 
     fun providers(): List<AppWidgetProviderInfo> = runCatching {
@@ -71,24 +75,25 @@ class WidgetHostHolder(private val context: Context) {
     fun providerInfo(widgetId: Int): AppWidgetProviderInfo? =
         runCatching { manager.getAppWidgetInfo(widgetId) }.getOrNull()
 
-    fun createView(record: WidgetRecord): AppWidgetHostView? {
-        viewCache[record.id]?.let { return it }
+    /**
+     * The same widget id can be shown in two places at once (the widgets scope and the home
+     * screen). A platform view can only live in one parent, so views are cached per slot.
+     */
+    fun createView(record: WidgetRecord, slot: String = SLOT_SCOPE): AppWidgetHostView? {
+        val key = "${record.id}|$slot"
+        viewCache[key]?.let { return it }
         val info = providerInfo(record.id) ?: return null
         val view = runCatching { host.createView(context, record.id, info) }.getOrNull() ?: return null
-        viewCache[record.id] = view
+        viewCache[key] = view
         return view
     }
 
     /** Tells the widget how much space it actually got, in dp. */
     fun resize(record: WidgetRecord, widthDp: Int, heightDp: Int) {
         runCatching {
-            viewCache[record.id]?.updateAppWidgetSize(
-                null,
-                widthDp,
-                heightDp,
-                widthDp,
-                heightDp,
-            )
+            viewCache.values
+                .filter { it.appWidgetId == record.id }
+                .forEach { it.updateAppWidgetSize(null, widthDp, heightDp, widthDp, heightDp) }
             manager.updateAppWidgetOptions(record.id, sizeOptions(widthDp, heightDp))
         }
     }
@@ -125,8 +130,10 @@ class WidgetHostHolder(private val context: Context) {
         putInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, heightDp)
     }
 
-    private companion object {
-        const val HOST_ID = 4201
+    companion object {
+        const val SLOT_SCOPE = "scope"
+        const val SLOT_HOME = "home"
+        private const val HOST_ID = 4201
     }
 }
 

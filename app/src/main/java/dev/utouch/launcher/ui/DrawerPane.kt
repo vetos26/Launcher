@@ -114,6 +114,7 @@ fun LauncherDrawer(
     onAddWidget: (WidgetRecord) -> Unit,
     onRemoveWidget: (Int) -> Unit,
     onSetWidgetSpan: (Int, Int) -> Unit,
+    onToggleHomeWidget: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val contactsLauncher = rememberLauncherForActivityResult(
@@ -203,6 +204,7 @@ fun LauncherDrawer(
                         onAddWidget = onAddWidget,
                         onRemoveWidget = onRemoveWidget,
                         onSetWidgetSpan = onSetWidgetSpan,
+                        onToggleHomeWidget = onToggleHomeWidget,
                     )
 
                     DrawerTab.SETTINGS -> SettingsScope(
@@ -533,27 +535,31 @@ private fun DrawerDash(selected: DrawerTab, onSelect: (DrawerTab) -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 6.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly,
+        horizontalArrangement = Arrangement.spacedBy(2.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         DashItem(
+            modifier = Modifier.weight(1f),
             icon = Icons.Default.List,
             labelRes = R.string.tab_apps,
             selected = selected == DrawerTab.APPS,
             onClick = { onSelect(DrawerTab.APPS) },
         )
         DashItem(
+            modifier = Modifier.weight(1f),
             icon = Icons.Default.Refresh,
             labelRes = R.string.tab_recents,
             selected = selected == DrawerTab.RECENTS,
             onClick = { onSelect(DrawerTab.RECENTS) },
         )
         DashItem(
+            modifier = Modifier.weight(1f),
             labelRes = R.string.tab_widgets,
             selected = selected == DrawerTab.WIDGETS,
             onClick = { onSelect(DrawerTab.WIDGETS) },
         ) { tint -> WidgetsDashIcon(tint) }
         DashItem(
+            modifier = Modifier.weight(1f),
             icon = Icons.Default.Settings,
             labelRes = R.string.tab_settings,
             selected = selected == DrawerTab.SETTINGS,
@@ -567,14 +573,15 @@ private fun DashItem(
     @StringRes labelRes: Int,
     selected: Boolean,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
     icon: ImageVector? = null,
     customIcon: (@Composable (Color) -> Unit)? = null,
 ) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .clip(RoundedCornerShape(16.dp))
             .clickable(onClick = onClick)
-            .padding(horizontal = 14.dp, vertical = 8.dp),
+            .padding(horizontal = 4.dp, vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         val tint = if (selected) UbuntuOrange else TextSecondary
@@ -599,6 +606,9 @@ private fun DashItem(
             style = MaterialTheme.typography.labelSmall,
             color = if (selected) TextPrimary else TextSecondary,
             maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Visible,
+            textAlign = TextAlign.Center,
         )
     }
 }

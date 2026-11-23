@@ -137,6 +137,12 @@ fun LauncherScreen(viewModel: LauncherViewModel = viewModel()) {
             },
             onRefreshWeather = { viewModel.refreshWeather(force = true) },
             onDismissCoach = viewModel::dismissCoach,
+            widgetHolder = widgetHolder,
+            homeWidgets = if (state.widgetsEnabled) {
+                state.widgets.filter { it.id in state.homeWidgetIds }
+            } else {
+                emptyList()
+            },
             modifier = Modifier
                 .fillMaxSize()
                 .graphicsLayer {
@@ -215,6 +221,7 @@ fun LauncherScreen(viewModel: LauncherViewModel = viewModel()) {
             onAddWidget = viewModel::addWidget,
             onRemoveWidget = viewModel::removeWidget,
             onSetWidgetSpan = viewModel::setWidgetSpan,
+            onToggleHomeWidget = viewModel::toggleHomeWidget,
             modifier = Modifier
                 .align(Alignment.CenterStart)
                 .fillMaxHeight()

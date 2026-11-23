@@ -129,7 +129,7 @@
     <!-- Widgets -->
     <string name="tab_widgets">Виджеты</string>
     <string name="widgets_title">Виджеты</string>
-    <string name="widgets_subtitle">Бета · отдельный экран</string>
+    <string name="widgets_subtitle">Бета · отдельный экран · закрепление на главном</string>
     <string name="widgets_disabled_title">Виджеты выключены</string>
     <string name="widgets_disabled_body">Виджеты — бета-функция. Включите её, чтобы размещать виджеты приложений на отдельном экране — домашние скоупы останутся нетронутыми.</string>
     <string name="widgets_enable">Включить виджеты</string>
@@ -144,4 +144,5 @@
     <string name="widgets_missing_body">Провайдер удалён или виджет повреждён. Удалите его здесь.</string>
     <string name="widgets_picker_title">Выберите виджет</string>
     <string name="widgets_no_providers">На устройстве нет доступных виджетов</string>
+    <string name="widgets_on_home">На главном экране</string>
 </resources>

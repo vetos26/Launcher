@@ -45,6 +45,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import dev.utouch.launcher.LauncherUiState
 import dev.utouch.launcher.R
 import dev.utouch.launcher.ui.theme.TextPrimary
@@ -304,6 +305,7 @@ fun SettingsScope(
                     modifier = Modifier.padding(top = 6.dp),
                     style = MaterialTheme.typography.bodySmall,
                     color = TextSecondary,
+                    lineHeight = 18.sp,
                 )
             }
         }
@@ -333,9 +335,9 @@ private fun SwitchRow(
             )
             Text(
                 text = stringResource(description),
-                modifier = Modifier.padding(top = 2.dp),
-                style = MaterialTheme.typography.labelSmall,
-                color = TextTertiary,
+                modifier = Modifier.padding(top = 3.dp),
+                style = MaterialTheme.typography.bodySmall,
+                color = TextSecondary,
             )
         }
         Spacer(Modifier.width(12.dp))
@@ -381,9 +383,9 @@ private fun ActionRow(
             if (subtitle != null) {
                 Text(
                     text = subtitle,
-                    modifier = Modifier.padding(top = 2.dp),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = TextTertiary,
+                    modifier = Modifier.padding(top = 3.dp),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextSecondary,
                 )
             }
         }

@@ -129,7 +129,7 @@
     <!-- Widgets -->
     <string name="tab_widgets">Widgets</string>
     <string name="widgets_title">Widgets</string>
-    <string name="widgets_subtitle">Beta · separate screen</string>
+    <string name="widgets_subtitle">Beta · separate screen · pin to home</string>
     <string name="widgets_disabled_title">Widgets are off</string>
     <string name="widgets_disabled_body">Widgets are a beta feature. Turn them on to place app widgets on their own screen — the home scopes stay untouched.</string>
     <string name="widgets_enable">Turn widgets on</string>
@@ -144,4 +144,5 @@
     <string name="widgets_missing_body">Its provider was uninstalled or the widget got broken. Remove it here.</string>
     <string name="widgets_picker_title">Choose a widget</string>
     <string name="widgets_no_providers">No widgets available on this device</string>
+    <string name="widgets_on_home">On the home screen</string>
 </resources>
