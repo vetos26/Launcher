@@ -9,7 +9,7 @@ on:
       release_tag:
         description: "Release tag to publish"
         required: false
-        default: "v1.1"
+        default: "v1.2"
 
 permissions:
   contents: write
@@ -76,8 +76,8 @@ jobs:
         if: success() && github.event_name == 'workflow_dispatch'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ inputs.release_tag || 'v1.1' }}
-          name: Ubuntu Touch Launcher 1.1
+          tag_name: ${{ inputs.release_tag || 'v1.2' }}
+          name: Ubuntu Touch Launcher 1.2
           make_latest: true
           generate_release_notes: true
           body: |

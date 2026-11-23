@@ -32,6 +32,13 @@ class LauncherPrefs(context: Context) {
         prefs.edit().putString(KEY_PINNED, keys.joinToString("\n")).apply()
     }
 
+    fun hiddenKeys(): Set<String> =
+        prefs.getStringSet(KEY_HIDDEN, null)?.toSet() ?: emptySet()
+
+    fun saveHidden(keys: Set<String>) {
+        prefs.edit().putStringSet(KEY_HIDDEN, keys).apply()
+    }
+
     fun recentKeys(): List<String> = prefs.getString(KEY_RECENTS, null).orEmpty().toLines()
 
     fun saveRecents(keys: List<String>) {
@@ -99,6 +106,7 @@ class LauncherPrefs(context: Context) {
         const val KEY_WALLPAPER = "use_wallpaper"
         const val KEY_LABELS = "show_labels"
         const val KEY_COACH = "coach_shown"
+        const val KEY_HIDDEN = "hidden_apps"
         const val KEY_WEATHER_CITY = "weather_city"
         const val KEY_WEATHER_LAT = "weather_lat"
         const val KEY_WEATHER_LON = "weather_lon"

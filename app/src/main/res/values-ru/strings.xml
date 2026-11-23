@@ -90,4 +90,39 @@
     <string name="weather_snow_showers">Снегопады</string>
     <string name="weather_thunderstorm">Гроза</string>
     <string name="weather_unknown">Неизвестно</string>
+
+    <!-- Universal search -->
+    <string name="search_apps">Приложения</string>
+    <string name="search_contacts">Контакты</string>
+    <string name="search_settings">Настройки</string>
+    <string name="search_web">Интернет</string>
+    <string name="search_web_action">Найти «%1$s» в интернете</string>
+    <string name="contacts_permission_title">Поиск по контактам</string>
+    <string name="contacts_permission_body">Разрешите доступ к контактам, чтобы звонить прямо из лаунчера.</string>
+    <string name="contacts_permission_action">Разрешить</string>
+    <string name="contacts_empty">Контакты не найдены</string>
+
+    <!-- Launcher settings extras -->
+    <string name="settings_default_launcher">Сделать домашним экраном</string>
+    <string name="settings_default_launcher_desc">Выбирать этот лаунчер при нажатии кнопки Home</string>
+    <string name="settings_hidden_apps">Скрытые приложения</string>
+    <string name="settings_hidden_apps_count">Скрыто: %1$d</string>
+    <string name="hidden_apps_empty">Нет установленных приложений</string>
+
+    <!-- App shortcuts -->
+    <string name="shortcuts_title">Действия</string>
+
+    <!-- System settings entries -->
+    <string name="sys_wifi">Wi-Fi</string>
+    <string name="sys_bluetooth">Bluetooth</string>
+    <string name="sys_battery">Батарея</string>
+    <string name="sys_display">Экран</string>
+    <string name="sys_sound">Звук</string>
+    <string name="sys_location">Местоположение</string>
+    <string name="sys_datetime">Дата и время</string>
+    <string name="sys_apps">Приложения</string>
+    <string name="sys_notifications">Уведомления</string>
+    <string name="sys_language">Язык и ввод</string>
+    <string name="sys_accessibility">Специальные возможности</string>
+    <string name="sys_about">О телефоне</string>
 </resources>

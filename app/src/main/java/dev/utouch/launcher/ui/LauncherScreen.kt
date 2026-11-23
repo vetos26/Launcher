@@ -27,6 +27,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -47,6 +48,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.utouch.launcher.DrawerTab
 import dev.utouch.launcher.LauncherViewModel
 import dev.utouch.launcher.data.AppEntry
+import dev.utouch.launcher.data.AppShortcut
 import dev.utouch.launcher.ui.theme.TextPrimary
 import kotlinx.coroutines.launch
 
@@ -197,6 +199,12 @@ fun LauncherScreen(viewModel: LauncherViewModel = viewModel()) {
             onShowLabelsChange = viewModel::setShowLabels,
             onSetWeatherCity = viewModel::setWeatherCity,
             onRefreshWeather = { viewModel.refreshWeather(force = true) },
+            onOpenContact = viewModel::dial,
+            onOpenSetting = viewModel::openSystemSetting,
+            onWebSearch = viewModel::webSearch,
+            onContactsPermissionResult = viewModel::setContactsAllowed,
+            onToggleHidden = viewModel::toggleHidden,
+            onOpenHomeSettings = viewModel::openHomeSettings,
             modifier = Modifier
                 .align(Alignment.CenterStart)
                 .fillMaxHeight()
@@ -209,6 +217,12 @@ fun LauncherScreen(viewModel: LauncherViewModel = viewModel()) {
 
     val app = selectedApp
     if (app != null) {
+        val shortcuts by produceState(
+            initialValue = emptyList<AppShortcut>(),
+            key1 = app.key,
+        ) {
+            value = viewModel.shortcutsFor(app.packageName)
+        }
         val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
         ModalBottomSheet(
             onDismissRequest = { selectedApp = null },
@@ -235,6 +249,11 @@ fun LauncherScreen(viewModel: LauncherViewModel = viewModel()) {
             AppDetailsSheet(
                 app = app,
                 isPinned = app.key in state.pinnedKeys,
+                shortcuts = shortcuts,
+                onShortcut = { shortcut ->
+                    selectedApp = null
+                    viewModel.launchShortcut(app, shortcut)
+                },
                 onOpen = {
                     selectedApp = null
                     closeDrawer()

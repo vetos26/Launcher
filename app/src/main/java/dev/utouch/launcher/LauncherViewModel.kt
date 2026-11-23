@@ -1,5 +1,6 @@
 package dev.utouch.launcher
 
+import android.Manifest
 import android.app.Application
 import android.content.ActivityNotFoundException
 import android.content.BroadcastReceiver
@@ -8,21 +9,30 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.net.Uri
 import android.os.BatteryManager
+import android.app.SearchManager
+import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import dev.utouch.launcher.data.AppEntry
+import dev.utouch.launcher.data.AppShortcut
+import dev.utouch.launcher.data.Contact
+import dev.utouch.launcher.data.ContactsRepository
 import dev.utouch.launcher.data.LauncherPrefs
 import dev.utouch.launcher.data.PackageRepository
 import dev.utouch.launcher.data.Place
+import dev.utouch.launcher.data.ShortcutRepository
+import dev.utouch.launcher.data.SystemSetting
 import dev.utouch.launcher.data.Weather
 import dev.utouch.launcher.data.WeatherRepository
 import dev.utouch.launcher.data.loadWallpaper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -37,6 +47,7 @@ data class LauncherUiState(
     val loading: Boolean = true,
     val apps: List<AppEntry> = emptyList(),
     val pinnedKeys: List<String> = emptyList(),
+    val hiddenKeys: Set<String> = emptySet(),
     val recentKeys: List<String> = emptyList(),
     val query: String = "",
     val includeSystemApps: Boolean = true,
@@ -44,6 +55,8 @@ data class LauncherUiState(
     val showLabels: Boolean = true,
     val wallpaper: ImageBitmap? = null,
     val wallpaperAccent: Color? = null,
+    val contacts: List<Contact> = emptyList(),
+    val contactsAllowed: Boolean = false,
     val weatherCity: String? = null,
     val weather: Weather? = null,
     val weatherLoading: Boolean = false,
@@ -63,6 +76,8 @@ data class LauncherUiState(
 class LauncherViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = PackageRepository(application)
+    private val contactsRepository = ContactsRepository(application)
+    private val shortcutRepository = ShortcutRepository(application)
     private val weatherRepository = WeatherRepository()
     private val prefs = LauncherPrefs(application)
     private val appContext: Context = application.applicationContext
@@ -76,6 +91,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     private var wallpaperJob: Job? = null
     private var weatherJob: Job? = null
+    private var contactsJob: Job? = null
 
     private val packageReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) = reloadApps()
@@ -105,7 +121,12 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                 useWallpaper = prefs.useWallpaper,
                 showLabels = prefs.showLabels,
                 pinnedKeys = prefs.pinnedKeys(),
+                hiddenKeys = prefs.hiddenKeys(),
                 recentKeys = prefs.recentKeys(),
+                contactsAllowed = ContextCompat.checkSelfPermission(
+                    appContext,
+                    Manifest.permission.READ_CONTACTS,
+                ) == PackageManager.PERMISSION_GRANTED,
                 weatherCity = prefs.weatherCity,
                 weather = prefs.cachedWeather(),
                 showCoach = !prefs.coachShown,
@@ -135,6 +156,104 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     fun setQuery(query: String) {
         _uiState.update { it.copy(query = query) }
+        searchContacts(query)
+    }
+
+    // ------------------------------------------------------------ contacts
+
+    fun setContactsAllowed(allowed: Boolean) {
+        _uiState.update { it.copy(contactsAllowed = allowed) }
+        if (allowed) {
+            searchContacts(_uiState.value.query)
+        } else {
+            _uiState.update { it.copy(contacts = emptyList()) }
+        }
+    }
+
+    private fun searchContacts(query: String) {
+        contactsJob?.cancel()
+        val trimmed = query.trim()
+        if (trimmed.length < 2 || !_uiState.value.contactsAllowed) {
+            _uiState.update { it.copy(contacts = emptyList()) }
+            return
+        }
+        contactsJob = viewModelScope.launch {
+            delay(CONTACT_DEBOUNCE_MS)
+            val contacts = withContext(Dispatchers.IO) { contactsRepository.search(trimmed) }
+            _uiState.update { it.copy(contacts = contacts) }
+        }
+    }
+
+    fun dial(contact: Contact) {
+        val intent = Intent(Intent.ACTION_DIAL, Uri.fromParts("tel", contact.number, null))
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        runCatching { appContext.startActivity(intent) }
+            .onFailure { showMessage(appContext.getString(R.string.cannot_launch, contact.name)) }
+    }
+
+    // ---------------------------------------------------- search side doors
+
+    fun openSystemSetting(setting: SystemSetting) {
+        val intent = Intent(setting.action).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        runCatching { appContext.startActivity(intent) }
+            .onFailure { showMessage(appContext.getString(R.string.cannot_open_settings)) }
+    }
+
+    fun webSearch(query: String) {
+        val trimmed = query.trim()
+        if (trimmed.isEmpty()) return
+        val intent = Intent(Intent.ACTION_WEB_SEARCH)
+            .putExtra(SearchManager.QUERY, trimmed)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        runCatching { appContext.startActivity(intent) }
+            .onFailure {
+                val fallback = Intent(
+                    Intent.ACTION_VIEW,
+                    Uri.parse("https://duckduckgo.com/?q=" + Uri.encode(trimmed)),
+                ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                runCatching { appContext.startActivity(fallback) }
+                    .onFailure { showMessage(appContext.getString(R.string.cannot_launch, trimmed)) }
+            }
+    }
+
+    fun openHomeSettings() {
+        val candidates = listOf(
+            Intent(Settings.ACTION_HOME_SETTINGS),
+            Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS),
+            Intent(Settings.ACTION_SETTINGS),
+        )
+        for (intent in candidates) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            if (runCatching { appContext.startActivity(intent) }.isSuccess) return
+        }
+        showMessage(appContext.getString(R.string.cannot_open_settings))
+    }
+
+    // --------------------------------------------------------- shortcuts
+
+    suspend fun shortcutsFor(packageName: String): List<AppShortcut> =
+        withContext(Dispatchers.IO) { shortcutRepository.shortcutsFor(packageName) }
+
+    fun launchShortcut(app: AppEntry, shortcut: AppShortcut) {
+        if (shortcutRepository.start(shortcut)) {
+            _uiState.update { it.copy(recentKeys = prefs.pushRecent(app.key)) }
+        } else {
+            showMessage(appContext.getString(R.string.cannot_launch, app.label))
+        }
+    }
+
+    // ------------------------------------------------------------ hidden
+
+    fun toggleHidden(key: String) {
+        _uiState.update { state ->
+            val hidden = if (key in state.hiddenKeys) {
+                state.hiddenKeys - key
+            } else {
+                state.hiddenKeys + key
+            }
+            prefs.saveHidden(hidden)
+            state.copy(hiddenKeys = hidden)
+        }
     }
 
     fun launch(app: AppEntry) {
@@ -334,5 +453,6 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     private companion object {
         const val CACHE_TTL_MS = 30L * 60L * 1000L
+        const val CONTACT_DEBOUNCE_MS = 250L
     }
 }

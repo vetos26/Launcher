@@ -9,13 +9,17 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Refresh
@@ -39,6 +43,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import dev.utouch.launcher.LauncherUiState
 import dev.utouch.launcher.R
@@ -59,9 +64,12 @@ fun SettingsScope(
     onClearRecents: () -> Unit,
     onSetWeatherCity: (String) -> Unit,
     onRefreshWeather: () -> Unit,
+    onToggleHidden: (String) -> Unit,
+    onOpenHomeSettings: () -> Unit,
 ) {
     var cityDialog by remember { mutableStateOf(false) }
     var cityQuery by remember { mutableStateOf("") }
+    var hiddenDialog by remember { mutableStateOf(false) }
 
     if (cityDialog) {
         AlertDialog(
@@ -114,6 +122,68 @@ fun SettingsScope(
                         text = stringResource(android.R.string.cancel),
                         color = TextSecondary,
                     )
+                }
+            },
+        )
+    }
+
+    if (hiddenDialog) {
+        AlertDialog(
+            onDismissRequest = { hiddenDialog = false },
+            containerColor = Color(0xFF232329),
+            titleContentColor = TextPrimary,
+            title = {
+                Text(
+                    text = stringResource(R.string.settings_hidden_apps),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+            },
+            text = {
+                if (state.apps.isEmpty()) {
+                    Text(
+                        text = stringResource(R.string.hidden_apps_empty),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TextSecondary,
+                    )
+                } else {
+                    LazyColumn(modifier = Modifier.heightIn(max = 420.dp)) {
+                        items(items = state.apps, key = { it.key }) { app ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                AppIconImage(entry = app, size = 32.dp)
+                                Spacer(Modifier.width(10.dp))
+                                Text(
+                                    text = app.label,
+                                    modifier = Modifier.weight(1f),
+                                    style = MaterialTheme.typography.titleSmall,
+                                    color = TextPrimary,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                                Switch(
+                                    checked = app.key in state.hiddenKeys,
+                                    onCheckedChange = { onToggleHidden(app.key) },
+                                    colors = SwitchDefaults.colors(
+                                        checkedThumbColor = Color.White,
+                                        checkedTrackColor = UbuntuOrange,
+                                        checkedBorderColor = UbuntuOrange,
+                                        uncheckedThumbColor = TextSecondary,
+                                        uncheckedTrackColor = Color.White.copy(alpha = 0.10f),
+                                        uncheckedBorderColor = Color.White.copy(alpha = 0.16f),
+                                    ),
+                                )
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { hiddenDialog = false }) {
+                    Text(text = stringResource(android.R.string.ok), color = UbuntuOrange)
                 }
             },
         )
@@ -173,6 +243,22 @@ fun SettingsScope(
 
         item {
             SectionHeader(stringResource(R.string.settings_apps))
+        }
+        item {
+            ActionRow(
+                icon = Icons.Default.Home,
+                title = stringResource(R.string.settings_default_launcher),
+                subtitle = stringResource(R.string.settings_default_launcher_desc),
+                onClick = onOpenHomeSettings,
+            )
+        }
+        item {
+            ActionRow(
+                icon = Icons.Default.Lock,
+                title = stringResource(R.string.settings_hidden_apps),
+                subtitle = stringResource(R.string.settings_hidden_apps_count, state.hiddenKeys.size),
+                onClick = { hiddenDialog = true },
+            )
         }
         item {
             SwitchRow(

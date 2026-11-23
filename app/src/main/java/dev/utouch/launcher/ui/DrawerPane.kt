@@ -1,5 +1,8 @@
 package dev.utouch.launcher.ui
 
+import android.Manifest
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -46,6 +49,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -63,6 +67,8 @@ import dev.utouch.launcher.DrawerTab
 import dev.utouch.launcher.LauncherUiState
 import dev.utouch.launcher.R
 import dev.utouch.launcher.data.AppEntry
+import dev.utouch.launcher.data.Contact
+import dev.utouch.launcher.data.SystemSetting
 import dev.utouch.launcher.ui.theme.TextPrimary
 import dev.utouch.launcher.ui.theme.TextSecondary
 import dev.utouch.launcher.ui.theme.TextTertiary
@@ -91,8 +97,25 @@ fun LauncherDrawer(
     onShowLabelsChange: (Boolean) -> Unit,
     onSetWeatherCity: (String) -> Unit,
     onRefreshWeather: () -> Unit,
+    onOpenContact: (Contact) -> Unit,
+    onOpenSetting: (SystemSetting) -> Unit,
+    onWebSearch: (String) -> Unit,
+    onContactsPermissionResult: (Boolean) -> Unit,
+    onToggleHidden: (String) -> Unit,
+    onOpenHomeSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val contactsLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = onContactsPermissionResult,
+    )
+
+    LaunchedEffect(state.query) {
+        if (state.query.isNotBlank() && tab != DrawerTab.APPS) {
+            onTabChange(DrawerTab.APPS)
+        }
+    }
+
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(topEnd = 32.dp, bottomEnd = 32.dp),
@@ -136,11 +159,24 @@ fun LauncherDrawer(
 
             Box(modifier = Modifier.weight(1f)) {
                 when (tab) {
-                    DrawerTab.APPS -> AppsScope(
-                        state = state,
-                        onLaunch = onLaunch,
-                        onLongPressApp = onLongPressApp,
-                    )
+                    DrawerTab.APPS -> if (state.query.isNotBlank()) {
+                        SearchScope(
+                            state = state,
+                            onLaunchApp = onLaunch,
+                            onOpenContact = onOpenContact,
+                            onOpenSetting = onOpenSetting,
+                            onWebSearch = onWebSearch,
+                            onRequestContactsPermission = {
+                                contactsLauncher.launch(Manifest.permission.READ_CONTACTS)
+                            },
+                        )
+                    } else {
+                        AppsScope(
+                            state = state,
+                            onLaunch = onLaunch,
+                            onLongPressApp = onLongPressApp,
+                        )
+                    }
 
                     DrawerTab.RECENTS -> RecentsScope(
                         state = state,
@@ -159,6 +195,8 @@ fun LauncherDrawer(
                         onClearRecents = onClearRecents,
                         onSetWeatherCity = onSetWeatherCity,
                         onRefreshWeather = onRefreshWeather,
+                        onToggleHidden = onToggleHidden,
+                        onOpenHomeSettings = onOpenHomeSettings,
                     )
                 }
             }
@@ -185,8 +223,10 @@ private fun AppsScope(
 ) {
     val query = state.query.trim()
 
-    val visibleApps = remember(state.apps, state.includeSystemApps, query) {
-        val base = if (state.includeSystemApps) state.apps else state.apps.filterNot { it.isSystem }
+    val visibleApps = remember(state.apps, state.includeSystemApps, state.hiddenKeys, query) {
+        val base = state.apps
+            .filterNot { it.key in state.hiddenKeys }
+            .filter { state.includeSystemApps || !it.isSystem }
         if (query.isEmpty()) {
             base
         } else {
@@ -284,7 +324,9 @@ private fun RecentsScope(
     onLongPressApp: (AppEntry) -> Unit,
     onTogglePin: (String) -> Unit,
 ) {
-    val recents = remember(state.recentKeys, state.apps) { state.recentApps }
+    val recents = remember(state.recentKeys, state.apps, state.hiddenKeys) {
+        state.recentApps.filterNot { it.key in state.hiddenKeys }
+    }
 
     if (recents.isEmpty()) {
         ScopeEmptyState(
