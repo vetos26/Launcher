@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Лаунчер Ubuntu Touch</string>
+
+    <!-- Home -->
+    <string name="greeting_morning">Доброе утро</string>
+    <string name="greeting_day">Добрый день</string>
+    <string name="greeting_evening">Добрый вечер</string>
+    <string name="greeting_night">Доброй ночи</string>
+    <string name="pinned_title">Закреплённые</string>
+    <string name="suggested_title">Ваши приложения</string>
+    <string name="suggested_subtitle">Удерживайте приложение, чтобы закрепить его здесь</string>
+    <string name="home_hint">Смахните от левого края, чтобы открыть все приложения</string>
+    <string name="open_launcher">Открыть лаунчер</string>
+    <string name="home_empty">Приложения не найдены</string>
+    <string name="home_empty_body">Приложения появятся здесь, как только лаунчер их прочитает.</string>
+    <string name="launcher_loading">Читаем приложения…</string>
+
+    <!-- Drawer -->
+    <string name="tab_apps">Приложения</string>
+    <string name="tab_recents">Недавние</string>
+    <string name="tab_settings">Настройки</string>
+    <string name="search_hint">Поиск приложений</string>
+    <string name="close_launcher">Закрыть лаунчер</string>
+    <string name="clear_search">Очистить поиск</string>
+    <string name="no_results">Ничего не найдено по «%1$s»</string>
+    <string name="no_results_body">Попробуйте другое название.</string>
+    <string name="recents_empty">Нет недавних приложений</string>
+    <string name="recents_empty_body">Приложения, открытые из лаунчера, появятся здесь.</string>
+
+    <!-- App sheet -->
+    <string name="action_open">Открыть</string>
+    <string name="action_pin">Закрепить</string>
+    <string name="action_unpin">Открепить</string>
+    <string name="action_app_info">О приложении</string>
+    <string name="action_uninstall">Удалить</string>
+    <string name="system_app">Системное приложение</string>
+
+    <!-- Settings -->
+    <string name="settings_appearance">Внешний вид</string>
+    <string name="settings_apps">Приложения</string>
+    <string name="settings_recents">Недавние</string>
+    <string name="settings_about">О программе</string>
+    <string name="setting_wallpaper">Обои</string>
+    <string name="setting_wallpaper_desc">Показывать обои устройства за лаунчером</string>
+    <string name="setting_labels">Подписи</string>
+    <string name="setting_labels_desc">Показывать название под каждой иконкой</string>
+    <string name="setting_system">Системные приложения</string>
+    <string name="setting_system_desc">Показывать приложения, встроенные в систему</string>
+    <string name="action_reload">Обновить список</string>
+    <string name="apps_count">Установлено приложений: %1$d</string>
+    <string name="action_clear_recents">Очистить недавние</string>
+    <string name="recents_count">Запомнено: %1$d</string>
+    <string name="about_body">Домашний экран в духе Ubuntu Touch: док-панель в стиле Unity 8, тёмные поверхности Suru и оранжевый акцент Ubuntu. Написан на Kotlin с Jetpack Compose.</string>
+    <string name="about_version">Версия %1$s</string>
+
+    <!-- Messages -->
+    <string name="cannot_launch">Не удалось открыть %1$s</string>
+    <string name="cannot_open_settings">Настройки приложения недоступны</string>
+    <string name="cannot_uninstall">Не удалось запустить удаление</string>
+</resources>
