@@ -129,6 +129,15 @@
   .dot.s{background:transparent;border:1.6px solid currentColor;border-radius:50%;
     width:16px;height:16px}
 
+  /* home dock */
+  .dock{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:26px;
+    background:rgba(29,29,34,.92);border:1px solid rgba(255,255,255,.10);
+    box-shadow:0 10px 26px rgba(0,0,0,.5);margin-top:auto}
+  .dock .ico{width:38px;height:38px;border-radius:12px;font-size:15px;flex:none;position:relative}
+  .dock .sep{width:1px;height:30px;background:rgba(255,255,255,.14);margin:0 4px}
+  .dock .plus{width:38px;height:38px;border-radius:12px;background:rgba(255,255,255,.08);
+    display:grid;place-items:center;color:var(--orange);font-size:18px}
+
   /* widgets frame */
   .wcard{background:rgba(255,255,255,.055);border:1px solid var(--stroke);border-radius:18px;
     padding:12px 14px;margin-bottom:10px}
@@ -189,27 +198,6 @@
         <div class="clock">21:34</div>
         <div class="date">воскресенье, 23 ноября 2026 г.</div>
 
-        <div class="card">
-          <div class="card-label">Погода</div>
-          <div class="weather">
-            <div>
-              <div class="temp">12°</div>
-              <div class="city">Франкфурт-на-Майне</div>
-              <div class="cond">Переменная облачность</div>
-            </div>
-            <div class="glyph">⛅</div>
-          </div>
-          <div class="link">Обновить</div>
-        </div>
-
-        <div class="card">
-          <div class="battery-row">
-            <span class="card-label muted">Батарея</span>
-            <span class="pct">78%</span>
-          </div>
-          <div class="bar"><i style="width:78%"></i></div>
-        </div>
-
         <div class="wcard" style="margin-top:12px;padding:10px 14px;display:flex;align-items:center;gap:10px">
           <div style="width:30px;height:30px;border-radius:50%;background:rgba(233,84,32,.18);display:grid;place-items:center;color:var(--orange);font-size:12px">▶</div>
           <div style="flex:1;min-width:0">
@@ -228,7 +216,15 @@
 
         <div class="hint">
           <div class="dots"><i class="on"></i><i></i></div>
-          <small>Смахните снизу вверх для меню</small>
+        </div>
+
+        <div class="dock">
+          <div class="ico" style="background:linear-gradient(150deg,#e05e2f,#b83c1c)">🦊</div>
+          <div class="ico" style="background:linear-gradient(150deg,#4a8fe7,#2b62b8)">✉</div>
+          <div class="ico" style="background:linear-gradient(150deg,#e5b64a,#b8871e)">🗂</div>
+          <div class="ico" style="background:linear-gradient(150deg,#4bb6c9,#2b7f92)">◈</div>
+          <div class="sep"></div>
+          <div class="plus">+</div>
         </div>
       </div>
     </div>
