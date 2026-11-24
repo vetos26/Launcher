@@ -128,9 +128,13 @@ jobs:
 
           # Step summaries are not readable through the API, annotations are. Emit the
           # compiler output as one multi-line annotation so CI failures can be inspected.
-          combined=$(grep -E "^(e|error): " build.log | head -40 | awk '{gsub(/%/,"%25"); printf "%s%%0A", $0}')
+          combined=$(grep -E "^(e|error): |^FAILURE: |What went wrong|^Caused by: |Execution failed for task|OutOfMemoryError|Kotlin daemon" build.log \
+            | head -40 | awk '{gsub(/%/,"%25"); printf "%s%%0A", $0}')
           if [ -n "$combined" ]; then
             echo "::error title=Gradle errors::$combined"
+          else
+            tail_out=$(tail -25 build.log | awk '{gsub(/%/,"%25"); printf "%s%%0A", $0}')
+            echo "::error title=Gradle failure (log tail)::$tail_out"
           fi
 
       - name: Summarize build
