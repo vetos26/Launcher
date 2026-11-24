@@ -10,3 +10,8 @@
 .cxx
 local.properties
 *.hprof
+
+# private signing key — lives in GitHub secrets, never in git
+/signing/*.p12
+/signing/*.p12.base64.txt
+/signing/password.txt

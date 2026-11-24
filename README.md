@@ -7,7 +7,7 @@
 Написан на **Kotlin + Jetpack Compose**, без сторонних библиотек (только AndroidX).
 
 ```
-Kotlin 2.0.21 · AGP 8.7.2 · Gradle 8.9 · minSdk 26 · targetSdk 35 · версия 1.5
+Kotlin 2.0.21 · AGP 8.7.2 · Gradle 8.9 · minSdk 26 · targetSdk 35 · версия 1.5.1
 ```
 
 ## Что умеет
@@ -55,8 +55,12 @@ Kotlin 2.0.21 · AGP 8.7.2 · Gradle 8.9 · minSdk 26 · targetSdk 35 · вер�
 
 ## Готовый APK
 
-**[Скачать app-debug.apk](https://github.com/vetos26/Launcher/releases/latest/download/app-debug.apk)** — собран
+**[Скачать utouch-launcher.apk](https://github.com/vetos26/Launcher/releases/latest/download/utouch-launcher.apk)** — собран
 GitHub Actions (workflow «Android build») и лежит в [последнем релизе](https://github.com/vetos26/Launcher/releases/latest).
+С версии 1.5.1 APK подписан **постоянным ключом** — обновления ставятся поверх без
+удаления приложения (подробности: `docs/signing.md`). Отладочный вариант, если ключа нет,
+собирается как раньше.
+
 Версия 1.5: виджеты на главном можно **перетаскивать пальцем в любое место**
 (долгое нажатие на домашнем экране → режим перемещения → «Готово»), ширина ½ или
 полная, позиции сохраняются; виджеты приложений живут в отдельном скоупе «Виджеты».
@@ -67,7 +71,7 @@ GitHub Actions (workflow «Android build») и лежит в [последнем
 Установка: скачайте файл на телефон, разрешите установку из этого источника и откройте APK.
 Затем выберите лаунчер домашним экраном:
 *Настройки → Приложения → Приложения по умолчанию → Домашнее приложение*.
-На Android 10+ альтернатива: `adb install -r app-debug.apk`.
+На Android 10+ альтернатива: `adb install -r utouch-launcher.apk`.
 
 ## Сборка
 
@@ -129,8 +133,10 @@ app/src/main/java/dev/utouch/launcher/
 ## Заметки
 
 - APK собирается в CI (`.github/workflows/android.yml`): каждый пуш в `main`/`arena/**`
-  запускает `./gradlew assembleDebug`, а сборка из `workflow_dispatch` дополнительно
-  публикует релиз с APK.
+  запускает `./gradlew assembleDebug assembleRelease`, а сборка из `workflow_dispatch`
+  дополнительно публикует релиз с APK. Если в секретах репозитория есть ключ подписи
+  (`SIGNING_KEYSTORE` + `SIGNING_STORE_PASSWORD`), публикуется подписанный release-APK,
+  иначе — debug (см. `docs/signing.md`).
 - `QUERY_ALL_PACKAGES` нужен, чтобы видеть все приложения; для Google Play это
   чувствительное разрешение (для личного лаунчера и F-Droid всё в порядке).
 - Обои читаются через `WallpaperManager` «best effort»: если прошивка не даёт доступ,

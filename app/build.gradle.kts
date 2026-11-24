@@ -4,6 +4,24 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
+// Permanent signing key. CI restores it from GitHub secrets into a temp path; locally it can also
+// sit in signing/ (that folder is git-ignored). Without a key the release build stays unsigned and
+// the workflow falls back to the debug APK, so nothing breaks for contributors.
+val stableStore: String? = System.getenv("SIGNING_KEYSTORE_PATH")
+    ?.takeIf { it.isNotBlank() && file(it).exists() }
+    ?: rootProject.file("signing/utouch-launcher.p12")
+        .takeIf { it.exists() }
+        ?.absolutePath
+
+val stablePassword: String? = System.getenv("SIGNING_STORE_PASSWORD")
+    ?: rootProject.file("signing/password.txt")
+        .takeIf { it.exists() }
+        ?.readText()
+        ?.trim()
+        ?.takeIf { it.isNotEmpty() }
+
+val canSignRelease = stableStore != null && stablePassword != null
+
 android {
     namespace = "dev.utouch.launcher"
     compileSdk = 35
@@ -12,9 +30,21 @@ android {
         applicationId = "dev.utouch.launcher"
         minSdk = 26
         targetSdk = 35
-        versionCode = 6
-        versionName = "1.5"
+        versionCode = 7
+        versionName = "1.5.1"
         resourceConfigurations += listOf("en", "ru")
+    }
+
+    signingConfigs {
+        if (canSignRelease) {
+            create("stable") {
+                storeFile = file(stableStore!!)
+                storePassword = stablePassword
+                keyAlias = System.getenv("SIGNING_KEY_ALIAS") ?: "utouch"
+                keyPassword = System.getenv("SIGNING_KEY_PASSWORD") ?: stablePassword
+                storeType = "PKCS12"
+            }
+        }
     }
 
     buildTypes {
@@ -24,6 +54,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+            if (canSignRelease) {
+                signingConfig = signingConfigs.getByName("stable")
+            }
         }
     }
 
