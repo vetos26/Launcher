@@ -143,6 +143,12 @@ fun LauncherScreen(viewModel: LauncherViewModel = viewModel()) {
             } else {
                 emptyList()
             },
+            homeLayout = state.homeLayout,
+            homeEditMode = state.homeEditMode,
+            onEnterHomeEdit = { viewModel.setHomeEditMode(true) },
+            onExitHomeEdit = { viewModel.setHomeEditMode(false) },
+            onMoveHomeWidget = viewModel::moveHomeWidget,
+            onResetHomeLayout = viewModel::resetHomeLayout,
             modifier = Modifier
                 .fillMaxSize()
                 .graphicsLayer {
@@ -222,6 +228,7 @@ fun LauncherScreen(viewModel: LauncherViewModel = viewModel()) {
             onRemoveWidget = viewModel::removeWidget,
             onSetWidgetSpan = viewModel::setWidgetSpan,
             onToggleHomeWidget = viewModel::toggleHomeWidget,
+            onSetWidgetWidth = viewModel::setWidgetWidth,
             modifier = Modifier
                 .align(Alignment.CenterStart)
                 .fillMaxHeight()

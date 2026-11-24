@@ -29,6 +29,7 @@ import dev.utouch.launcher.data.ShortcutRepository
 import dev.utouch.launcher.data.SystemSetting
 import dev.utouch.launcher.data.Weather
 import dev.utouch.launcher.data.WeatherRepository
+import dev.utouch.launcher.data.WidgetPos
 import dev.utouch.launcher.data.WidgetRecord
 import dev.utouch.launcher.data.loadWallpaper
 import kotlinx.coroutines.Dispatchers
@@ -52,6 +53,10 @@ data class LauncherUiState(
     val widgets: List<WidgetRecord> = emptyList(),
     val widgetsEnabled: Boolean = false,
     val homeWidgetIds: List<Int> = emptyList(),
+    /** Free positions of home widgets in dp; a widget without an entry is auto-placed. */
+    val homeLayout: Map<Int, WidgetPos> = emptyMap(),
+    /** True while the home screen is in "move widgets around" mode. */
+    val homeEditMode: Boolean = false,
     val recentKeys: List<String> = emptyList(),
     val query: String = "",
     val includeSystemApps: Boolean = true,
@@ -129,6 +134,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                 widgets = prefs.widgets(),
                 widgetsEnabled = prefs.widgetsEnabled,
                 homeWidgetIds = prefs.homeWidgetIds(),
+                homeLayout = prefs.homePositions(),
                 recentKeys = prefs.recentKeys(),
                 contactsAllowed = ContextCompat.checkSelfPermission(
                     appContext,
@@ -269,9 +275,11 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         _uiState.update { state ->
             val widgets = state.widgets.filterNot { it.id == widgetId }
             val home = state.homeWidgetIds - widgetId
+            val layout = state.homeLayout - widgetId
             prefs.saveWidgets(widgets)
             prefs.saveHomeWidgetIds(home)
-            state.copy(widgets = widgets, homeWidgetIds = home)
+            prefs.saveHomePositions(layout)
+            state.copy(widgets = widgets, homeWidgetIds = home, homeLayout = layout)
         }
     }
 
@@ -284,7 +292,39 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                 state.homeWidgetIds + widgetId
             }
             prefs.saveHomeWidgetIds(home)
-            state.copy(homeWidgetIds = home)
+            // Unpinning forgets the free position, so re-pinning starts from the auto slot.
+            val layout = if (widgetId in home) state.homeLayout else state.homeLayout - widgetId
+            if (layout !== state.homeLayout) prefs.saveHomePositions(layout)
+            state.copy(homeWidgetIds = home, homeLayout = layout)
+        }
+    }
+
+    fun setHomeEditMode(value: Boolean) {
+        _uiState.update { it.copy(homeEditMode = value) }
+    }
+
+    /** Commits a dragged widget position (already clamped by the caller, in dp). */
+    fun moveHomeWidget(widgetId: Int, x: Float, y: Float) {
+        _uiState.update { state ->
+            val layout = state.homeLayout + (widgetId to WidgetPos(x, y))
+            prefs.saveHomePositions(layout)
+            state.copy(homeLayout = layout)
+        }
+    }
+
+    /** Drops every manual position: widgets go back to their automatic slots. */
+    fun resetHomeLayout() {
+        prefs.saveHomePositions(emptyMap())
+        _uiState.update { it.copy(homeLayout = emptyMap()) }
+    }
+
+    fun setWidgetWidth(widgetId: Int, spanX: Int) {
+        _uiState.update { state ->
+            val widgets = state.widgets.map {
+                if (it.id == widgetId) it.copy(spanX = spanX.coerceIn(1, 2)) else it
+            }
+            prefs.saveWidgets(widgets)
+            state.copy(widgets = widgets)
         }
     }
 

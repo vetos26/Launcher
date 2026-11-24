@@ -78,6 +78,7 @@ fun WidgetsScope(
     onRemoveWidget: (Int) -> Unit,
     onSetWidgetSpan: (Int, Int) -> Unit,
     onToggleHomeWidget: (Int) -> Unit,
+    onSetWidgetWidth: (Int, Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var pickerOpen by remember { mutableStateOf(false) }
@@ -215,6 +216,7 @@ fun WidgetsScope(
                         editMode = editMode,
                         onHome = record.id in state.homeWidgetIds,
                         onToggleHome = { onToggleHomeWidget(record.id) },
+                        onSetWidth = { width -> onSetWidgetWidth(record.id, width) },
                         onRemove = {
                             holder?.delete(record.id)
                             onRemoveWidget(record.id)
@@ -247,6 +249,7 @@ private fun WidgetCard(
     editMode: Boolean,
     onHome: Boolean,
     onToggleHome: () -> Unit,
+    onSetWidth: (Int) -> Unit,
     onRemove: () -> Unit,
     onSetSpan: (Int) -> Unit,
 ) {
@@ -330,6 +333,11 @@ private fun WidgetCard(
                             onClick = { onSetSpan(record.spanY + 1) },
                         )
                         Spacer(Modifier.weight(1f))
+                        SmallButton(
+                            label = if (record.spanX <= 1) "½" else "1×",
+                            highlighted = record.spanX <= 1,
+                            onClick = { onSetWidth(if (record.spanX <= 1) 2 else 1) },
+                        )
                         SmallButton(
                             icon = Icons.Default.Home,
                             label = null,

@@ -10,12 +10,20 @@ import android.os.Bundle
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 
-/** One widget placement. Only the height is configurable; widgets always span the full width. */
+/**
+ * One widget placement. On the widgets scope a widget always takes the full width; on the home
+ * screen it can be half width ([spanX] = 1) or full width ([spanX] = 2) and is positioned by
+ * [WidgetPos] instead of the flow.
+ */
 data class WidgetRecord(
     val id: Int,
     val provider: String,
     val spanY: Int = 2,
+    val spanX: Int = 2,
 )
+
+/** Free position of a widget on the home screen, in dp from the top-left of the home page. */
+data class WidgetPos(val x: Float, val y: Float)
 
 sealed interface AddWidgetResult {
     /** The widget was bound right away. */

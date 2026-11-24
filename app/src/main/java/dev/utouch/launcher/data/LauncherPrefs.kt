@@ -70,6 +70,7 @@ class LauncherPrefs(context: Context) {
                     id = item.optInt("id", -1),
                     provider = item.optString("provider"),
                     spanY = item.optInt("spanY", 2),
+                    spanX = item.optInt("spanX", 2).coerceIn(1, 2),
                 )
             }.filter { it.id >= 0 }
         }.getOrDefault(emptyList())
@@ -87,6 +88,36 @@ class LauncherPrefs(context: Context) {
         prefs.edit().putString(KEY_WIDGETS_HOME, ids.joinToString(",")).apply()
     }
 
+    /** Free positions of home-screen widgets; widgets without an entry are auto-placed. */
+    fun homePositions(): Map<Int, WidgetPos> {
+        val raw = prefs.getString(KEY_WIDGETS_POS, null) ?: return emptyMap()
+        return runCatching {
+            val array = JSONArray(raw)
+            (0 until array.length()).mapNotNull { index ->
+                val item = array.optJSONObject(index) ?: return@mapNotNull null
+                val id = item.optInt("id", -1)
+                if (id < 0) return@mapNotNull null
+                id to WidgetPos(
+                    x = item.optDouble("x", 0.0).toFloat(),
+                    y = item.optDouble("y", 0.0).toFloat(),
+                )
+            }.toMap()
+        }.getOrDefault(emptyMap())
+    }
+
+    fun saveHomePositions(positions: Map<Int, WidgetPos>) {
+        val array = JSONArray()
+        positions.forEach { (id, pos) ->
+            array.put(
+                JSONObject()
+                    .put("id", id)
+                    .put("x", pos.x.toDouble())
+                    .put("y", pos.y.toDouble()),
+            )
+        }
+        prefs.edit().putString(KEY_WIDGETS_POS, array.toString()).apply()
+    }
+
     fun saveWidgets(records: List<WidgetRecord>) {
         val array = JSONArray()
         records.forEach { record ->
@@ -94,7 +125,8 @@ class LauncherPrefs(context: Context) {
                 JSONObject()
                     .put("id", record.id)
                     .put("provider", record.provider)
-                    .put("spanY", record.spanY),
+                    .put("spanY", record.spanY)
+                    .put("spanX", record.spanX),
             )
         }
         prefs.edit().putString(KEY_WIDGETS, array.toString()).apply()
@@ -158,6 +190,7 @@ class LauncherPrefs(context: Context) {
         const val KEY_WIDGETS = "widgets"
         const val KEY_WIDGETS_ENABLED = "widgets_enabled"
         const val KEY_WIDGETS_HOME = "widgets_home"
+        const val KEY_WIDGETS_POS = "widgets_home_pos"
         const val KEY_WEATHER_CITY = "weather_city"
         const val KEY_WEATHER_LAT = "weather_lat"
         const val KEY_WEATHER_LON = "weather_lon"

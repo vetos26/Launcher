@@ -115,6 +115,7 @@ fun LauncherDrawer(
     onRemoveWidget: (Int) -> Unit,
     onSetWidgetSpan: (Int, Int) -> Unit,
     onToggleHomeWidget: (Int) -> Unit,
+    onSetWidgetWidth: (Int, Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val contactsLauncher = rememberLauncherForActivityResult(
@@ -205,6 +206,7 @@ fun LauncherDrawer(
                         onRemoveWidget = onRemoveWidget,
                         onSetWidgetSpan = onSetWidgetSpan,
                         onToggleHomeWidget = onToggleHomeWidget,
+                        onSetWidgetWidth = onSetWidgetWidth,
                     )
 
                     DrawerTab.SETTINGS -> SettingsScope(
