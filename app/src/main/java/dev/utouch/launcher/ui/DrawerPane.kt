@@ -11,6 +11,7 @@ import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -38,7 +39,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
@@ -61,6 +62,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -118,6 +120,8 @@ fun LauncherDrawer(
     onSetWidgetWidth: (Int, Int) -> Unit,
     onNotificationsEnabledChange: (Boolean) -> Unit,
     onOpenNotificationAccess: () -> Unit,
+    onDragDown: (Float) -> Unit = {},
+    onDragEnd: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val contactsLauncher = rememberLauncherForActivityResult(
@@ -133,7 +137,7 @@ fun LauncherDrawer(
 
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(topEnd = 32.dp, bottomEnd = 32.dp),
+        shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp),
         color = Color(0xFF1A1A1F),
         border = BorderStroke(1.dp, Color.White.copy(alpha = 0.06f)),
         shadowElevation = 28.dp,
@@ -144,7 +148,29 @@ fun LauncherDrawer(
                 .windowInsetsPadding(WindowInsets.systemBars)
                 .padding(horizontal = 14.dp),
         ) {
-            Spacer(Modifier.height(10.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(22.dp)
+                    .pointerInput(Unit) {
+                        detectVerticalDragGestures(
+                            onVerticalDrag = { change, dragAmount ->
+                                change.consume()
+                                onDragDown(dragAmount)
+                            },
+                            onDragEnd = { onDragEnd() },
+                            onDragCancel = { onDragEnd() },
+                        )
+                    },
+                contentAlignment = Alignment.Center,
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(width = 38.dp, height = 4.dp)
+                        .clip(CircleShape)
+                        .background(Color.White.copy(alpha = 0.22f)),
+                )
+            }
 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 SearchField(
@@ -162,7 +188,7 @@ fun LauncherDrawer(
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(
-                        imageVector = Icons.Default.KeyboardArrowLeft,
+                        imageVector = Icons.Default.KeyboardArrowDown,
                         contentDescription = stringResource(R.string.close_launcher),
                         tint = TextPrimary,
                         modifier = Modifier.size(22.dp),
@@ -551,13 +577,6 @@ private fun DrawerDash(selected: DrawerTab, onSelect: (DrawerTab) -> Unit) {
             labelRes = R.string.tab_apps,
             selected = selected == DrawerTab.APPS,
             onClick = { onSelect(DrawerTab.APPS) },
-        )
-        DashItem(
-            modifier = Modifier.weight(1f),
-            icon = Icons.Default.Refresh,
-            labelRes = R.string.tab_recents,
-            selected = selected == DrawerTab.RECENTS,
-            onClick = { onSelect(DrawerTab.RECENTS) },
         )
         DashItem(
             modifier = Modifier.weight(1f),

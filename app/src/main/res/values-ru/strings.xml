@@ -10,7 +10,7 @@
     <string name="pinned_title">Закреплённые</string>
     <string name="suggested_title">Ваши приложения</string>
     <string name="suggested_subtitle">Удерживайте приложение, чтобы закрепить его здесь</string>
-    <string name="home_hint">Смахните от левого края, чтобы открыть все приложения</string>
+    <string name="home_hint">Смахните снизу вверх, чтобы открыть приложения, виджеты и настройки</string>
     <string name="open_launcher">Открыть лаунчер</string>
     <string name="home_empty">Приложения не найдены</string>
     <string name="home_empty_body">Приложения появятся здесь, как только лаунчер их прочитает.</string>
@@ -76,8 +76,8 @@
     <string name="settings_weather">Погода</string>
     <string name="battery_title">Батарея</string>
     <string name="battery_charging">Заряжается</string>
-    <string name="coach_title">Лаунчер живёт слева</string>
-    <string name="coach_body">Смахните от левого края, чтобы открыть приложения, недавние и настройки.</string>
+    <string name="coach_title">Меню теперь снизу</string>
+    <string name="coach_body">Смахните от нижнего края вверх, чтобы открыть приложения, виджеты и настройки.</string>
     <string name="coach_got_it">Понятно</string>
     <string name="weather_clear">Ясно</string>
     <string name="weather_partly_cloudy">Переменная облачность</string>

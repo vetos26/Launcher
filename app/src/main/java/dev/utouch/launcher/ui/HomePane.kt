@@ -34,7 +34,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.CircularProgressIndicator
@@ -804,31 +804,7 @@ private fun HomeFooter(pagerState: PagerState, onOpenLauncher: () -> Unit) {
     ) {
         PageDots(pagerState)
 
-        Spacer(Modifier.height(14.dp))
-
-        Row(
-            modifier = Modifier
-                .clip(RoundedCornerShape(26.dp))
-                .clickable(onClick = onOpenLauncher)
-                .background(Color.White.copy(alpha = 0.08f))
-                .padding(PaddingValues(horizontal = 20.dp, vertical = 12.dp)),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(
-                imageVector = Icons.Default.Menu,
-                contentDescription = null,
-                tint = UbuntuOrange,
-                modifier = Modifier.size(18.dp),
-            )
-            Spacer(Modifier.width(10.dp))
-            Text(
-                text = stringResource(R.string.open_launcher),
-                style = MaterialTheme.typography.titleSmall,
-                color = TextPrimary,
-            )
-        }
-
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(12.dp))
 
         Text(
             text = stringResource(R.string.home_hint),
@@ -865,9 +841,9 @@ private fun CoachOverlay(onDismiss: () -> Unit) {
     ) {
         Surface(
             modifier = Modifier
-                .align(Alignment.CenterStart)
-                .padding(horizontal = 18.dp)
-                .offset(x = (shift * 12).dp),
+                .align(Alignment.BottomCenter)
+                .padding(horizontal = 18.dp, vertical = 90.dp)
+                .offset(y = (-shift * 12).dp),
             shape = RoundedCornerShape(24.dp),
             color = Color(0xFF232329),
             border = BorderStroke(1.dp, Color.White.copy(alpha = 0.10f)),
@@ -877,7 +853,7 @@ private fun CoachOverlay(onDismiss: () -> Unit) {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(
-                    imageVector = Icons.Default.KeyboardArrowRight,
+                    imageVector = Icons.Default.KeyboardArrowUp,
                     contentDescription = null,
                     tint = UbuntuOrange,
                     modifier = Modifier.size(26.dp),

@@ -10,7 +10,7 @@
     <string name="pinned_title">Pinned</string>
     <string name="suggested_title">Your apps</string>
     <string name="suggested_subtitle">Long-press an app to pin it here</string>
-    <string name="home_hint">Swipe from the left edge for all apps</string>
+    <string name="home_hint">Swipe up from the bottom edge for apps, widgets and settings</string>
     <string name="open_launcher">Open launcher</string>
     <string name="home_empty">No apps found yet</string>
     <string name="home_empty_body">Apps will appear here as soon as the launcher has read them.</string>
@@ -76,8 +76,8 @@
     <string name="settings_weather">Weather</string>
     <string name="battery_title">Battery</string>
     <string name="battery_charging">Charging</string>
-    <string name="coach_title">The launcher lives on the left</string>
-    <string name="coach_body">Swipe from the left edge to open every app, recents and settings.</string>
+    <string name="coach_title">The menu lives at the bottom</string>
+    <string name="coach_body">Swipe up from the bottom edge to open apps, widgets and settings.</string>
     <string name="coach_got_it">Got it</string>
     <string name="weather_clear">Clear</string>
     <string name="weather_partly_cloudy">Partly cloudy</string>

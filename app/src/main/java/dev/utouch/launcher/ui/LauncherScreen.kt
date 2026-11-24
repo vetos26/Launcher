@@ -6,16 +6,15 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -54,7 +53,7 @@ import dev.utouch.launcher.ui.theme.TextPrimary
 import kotlinx.coroutines.launch
 
 /**
- * Root of the launcher: the home pane, the left edge swipe and the Unity 8 style drawer.
+ * Root of the launcher: the home pane and the bottom menu sheet that replaced the old side drawer.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -120,8 +119,8 @@ fun LauncherScreen(viewModel: LauncherViewModel = viewModel()) {
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
     ) {
-        val paneWidth = minOf(maxWidth * 0.88f, 430.dp)
-        val paneWidthPx = with(LocalDensity.current) { paneWidth.toPx() }
+        val sheetHeight = maxHeight * 0.82f
+        val sheetHeightPx = with(LocalDensity.current) { sheetHeight.toPx() }
 
         HomePane(
             state = state,
@@ -156,10 +155,9 @@ fun LauncherScreen(viewModel: LauncherViewModel = viewModel()) {
                 .fillMaxSize()
                 .graphicsLayer {
                     val open = drawerProgress.value
-                    val scale = 1f - 0.07f * open
+                    val scale = 1f - 0.06f * open
                     scaleX = scale
                     scaleY = scale
-                    translationX = paneWidthPx * 0.4f * open
                     alpha = 1f - 0.35f * open
                 },
         )
@@ -176,19 +174,19 @@ fun LauncherScreen(viewModel: LauncherViewModel = viewModel()) {
             )
         }
 
-        // Left edge: drag to reveal the drawer, exactly like the Ubuntu Touch edge swipe.
+        // Bottom edge: drag up to reveal the menu, the same gesture a phone user expects.
         Box(
             modifier = Modifier
-                .align(Alignment.CenterStart)
-                .fillMaxHeight()
-                .width(26.dp)
-                .pointerInput(paneWidthPx) {
-                    detectHorizontalDragGestures(
-                        onHorizontalDrag = { change, dragAmount ->
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .height(28.dp)
+                .pointerInput(sheetHeightPx) {
+                    detectVerticalDragGestures(
+                        onVerticalDrag = { change, dragAmount ->
                             change.consume()
                             scope.launch {
                                 drawerProgress.snapTo(
-                                    (drawerProgress.value + dragAmount / paneWidthPx)
+                                    (drawerProgress.value - dragAmount / sheetHeightPx)
                                         .coerceIn(0f, 1f),
                                 )
                             }
@@ -234,12 +232,20 @@ fun LauncherScreen(viewModel: LauncherViewModel = viewModel()) {
             onSetWidgetWidth = viewModel::setWidgetWidth,
             onNotificationsEnabledChange = viewModel::setNotificationsEnabled,
             onOpenNotificationAccess = viewModel::openNotificationAccessSettings,
+            onDragDown = { dy ->
+                scope.launch {
+                    drawerProgress.snapTo(
+                        (drawerProgress.value - dy / sheetHeightPx).coerceIn(0f, 1f),
+                    )
+                }
+            },
+            onDragEnd = { settleDrawer() },
             modifier = Modifier
-                .align(Alignment.CenterStart)
-                .fillMaxHeight()
-                .width(paneWidth)
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .height(sheetHeight)
                 .graphicsLayer {
-                    translationX = -paneWidthPx * (1f - drawerProgress.value)
+                    translationY = sheetHeightPx * (1f - drawerProgress.value)
                 },
         )
     }
