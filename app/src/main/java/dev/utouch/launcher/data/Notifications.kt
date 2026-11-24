@@ -116,7 +116,7 @@ class LauncherNotificationService : NotificationListenerService() {
     private fun isUserVisible(sbn: StatusBarNotification): Boolean {
         if (sbn.packageName == packageName) return false
         val notification = sbn.notification ?: return false
-        if (!notification.isClearable) return false
+        if (!sbn.isClearable) return false
         return when (notification.category) {
             Notification.CATEGORY_PROGRESS,
             Notification.CATEGORY_SERVICE,

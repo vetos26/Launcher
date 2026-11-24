@@ -13,6 +13,7 @@ import android.app.SearchManager
 import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
+import android.service.notification.NotificationListenerService
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.core.app.NotificationManagerCompat
@@ -221,7 +222,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     private fun requestNotificationRebind() {
         runCatching {
-            LauncherNotificationService.requestRebind(
+            NotificationListenerService.requestRebind(
                 android.content.ComponentName(appContext, LauncherNotificationService::class.java),
             )
         }
