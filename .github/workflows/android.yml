@@ -36,6 +36,24 @@ jobs:
           echo "ANDROID_HOME=$ANDROID_HOME"
           ls "$ANDROID_HOME/platforms" || true
 
+      - name: Signing diagnostics
+        shell: bash
+        env:
+          HAS_KEYSTORE: ${{ secrets.SIGNING_KEYSTORE != '' }}
+          HAS_STORE_PASS: ${{ secrets.SIGNING_STORE_PASSWORD != '' }}
+          HAS_KEY_PASS: ${{ secrets.SIGNING_KEY_PASSWORD != '' }}
+          HAS_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS != '' }}
+          VARS_JSON: ${{ toJSON(vars) }}
+        run: |
+          # Only presence and names are reported, never the values.
+          echo "::notice title=Signing secrets::keystore=$HAS_KEYSTORE storePassword=$HAS_STORE_PASS keyPassword=$HAS_KEY_PASS keyAlias=$HAS_ALIAS"
+          if [ -n "$VARS_JSON" ] && [ "$VARS_JSON" != "null" ]; then
+            names=$(printf '%s' "$VARS_JSON" | tr ',' '\n' | sed -n 's/^\s*"\([^"]*\)".*/\1/p' | paste -sd, -)
+            echo "::notice title=Repository variables::${names:-(none)}"
+          else
+            echo "::notice title=Repository variables::(none)"
+          fi
+
       - name: Restore signing key
         shell: bash
         env:
