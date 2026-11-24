@@ -103,8 +103,10 @@ jobs:
           fi
           out=$("$APKSIGNER" verify --print-certs dist/utouch-launcher.apk 2>&1 || true)
           echo "$out" | head -20
-          dn=$(echo "$out" | sed -n 's/^Signer #1 certificate DN: //p' | head -1)
-          fp=$(echo "$out" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -1)
+          # apksigner prints either "Signer #1 certificate DN: ..." (older) or
+          # "V2 Signer: certificate DN: ..." (newer build-tools).
+          dn=$(echo "$out" | sed -n -e 's/^Signer #1 certificate DN: //p' -e 's/^V[0-9] Signer: certificate DN: //p' | head -1)
+          fp=$(echo "$out" | sed -n -e 's/^Signer #1 certificate SHA-256 digest: //p' -e 's/^V[0-9] Signer: certificate SHA-256 digest: //p' | head -1)
           if [ -z "$dn" ]; then
             raw=$(echo "$out" | head -3 | tr '\n' ' ' | cut -c1-180)
             echo "::warning title=APK signature::no DN parsed; raw output: ${raw}"
