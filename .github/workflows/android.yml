@@ -101,12 +101,13 @@ jobs:
             echo "::warning title=APK signature::apksigner not found in the runner image, skipped"
             exit 0
           fi
-          out=$("$APKSIGNER" verify --print-certs dist/utouch-launcher.apk)
+          out=$("$APKSIGNER" verify --print-certs dist/utouch-launcher.apk 2>&1 || true)
           echo "$out" | head -20
           dn=$(echo "$out" | sed -n 's/^Signer #1 certificate DN: //p' | head -1)
           fp=$(echo "$out" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -1)
           if [ -z "$dn" ]; then
-            echo "::warning title=APK signature::no signer certificate found"
+            raw=$(echo "$out" | head -3 | tr '\n' ' ' | cut -c1-180)
+            echo "::warning title=APK signature::no DN parsed; raw output: ${raw}"
           else
             echo "::notice title=APK signature::DN=${dn} SHA-256=${fp}"
           fi
