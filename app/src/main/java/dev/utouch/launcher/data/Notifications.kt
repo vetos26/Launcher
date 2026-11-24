@@ -150,8 +150,8 @@ class LauncherNotificationService : NotificationListenerService() {
         val title = metadata?.getString(android.media.MediaMetadata.METADATA_KEY_TITLE)
             ?: metadata?.getString(android.media.MediaMetadata.METADATA_KEY_DISPLAY_TITLE)
             ?: return null
-        val artist = metadata.getString(android.media.MediaMetadata.METADATA_KEY_ARTIST)
-            ?: metadata.getString(android.media.MediaMetadata.METADATA_KEY_ALBUM_ARTIST)
+        val artist = metadata?.getString(android.media.MediaMetadata.METADATA_KEY_ARTIST)
+            ?: metadata?.getString(android.media.MediaMetadata.METADATA_KEY_ALBUM_ARTIST)
 
         NotificationCenter.publishToken(session.sessionToken)
 
