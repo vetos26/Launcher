@@ -63,7 +63,7 @@ jobs:
           KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
         run: |
           if [ -z "$KEYSTORE_B64" ]; then
-            echo "::notice title=Signing::No signing secrets found - publishing the debug APK instead."
+            echo "::notice title=Signing::No signing secrets - using the keystore committed in signing/."
             exit 0
           fi
           printf '%s' "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/utouch-launcher.p12"
