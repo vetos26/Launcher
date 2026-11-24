@@ -98,10 +98,18 @@ jobs:
         run: |
           APKSIGNER=$(ls "$ANDROID_HOME"/build-tools/*/apksigner 2>/dev/null | sort -V | tail -1 || true)
           if [ -z "$APKSIGNER" ]; then
-            echo "apksigner not found in the runner image, skipping verification"
+            echo "::warning title=APK signature::apksigner not found in the runner image, skipped"
             exit 0
           fi
-          "$APKSIGNER" verify --print-certs dist/utouch-launcher.apk | head -20
+          out=$("$APKSIGNER" verify --print-certs dist/utouch-launcher.apk)
+          echo "$out" | head -20
+          dn=$(echo "$out" | sed -n 's/^Signer #1 certificate DN: //p' | head -1)
+          fp=$(echo "$out" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -1)
+          if [ -z "$dn" ]; then
+            echo "::warning title=APK signature::no signer certificate found"
+          else
+            echo "::notice title=APK signature::DN=${dn} SHA-256=${fp}"
+          fi
 
       - name: Publish build log
         if: failure()
