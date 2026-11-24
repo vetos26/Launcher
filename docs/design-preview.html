@@ -91,11 +91,12 @@
   .drawer-home{position:absolute;inset:0;background:
       radial-gradient(120% 70% at 88% 6%, rgba(233,84,32,.20), transparent 62%),
       linear-gradient(180deg,#2e1c28 0%,#1d1720 46%,#111114 100%);
-    filter:brightness(.55) blur(1px);transform:scale(.94);transform-origin:70% 50%}
+    filter:brightness(.55) blur(1px);transform:scale(.94);transform-origin:50% 40%}
   .scrim{position:absolute;inset:0;background:rgba(0,0,0,.5)}
-  .drawer{position:absolute;top:0;left:0;bottom:0;width:88%;background:var(--panel);
-    border-radius:0 32px 32px 0;border-right:1px solid var(--stroke);
-    box-shadow:28px 0 60px rgba(0,0,0,.6);padding:38px 14px 12px;display:flex;flex-direction:column}
+  .drawer{position:absolute;left:0;right:0;bottom:0;height:82%;background:var(--panel);
+    border-radius:30px 30px 0 0;border-top:1px solid var(--stroke);
+    box-shadow:0 -28px 60px rgba(0,0,0,.6);padding:12px 14px 12px;display:flex;flex-direction:column}
+  .grab{width:38px;height:4px;border-radius:2px;background:rgba(255,255,255,.22);margin:2px auto 12px}
   .result{display:flex;align-items:center;gap:12px;padding:9px 10px;border-radius:16px}
   .result .ico.sm{width:34px;height:34px;border-radius:10px;font-size:14px}
   .result .txt{flex:1;min-width:0}
@@ -227,8 +228,7 @@
 
         <div class="hint">
           <div class="dots"><i class="on"></i><i></i></div>
-          <div class="pill"><i></i>Открыть лаунчер</div>
-          <small>Смахните от левого края для всех приложений</small>
+          <small>Смахните снизу вверх для меню</small>
         </div>
       </div>
     </div>
@@ -260,8 +260,7 @@
 
         <div class="hint">
           <div class="dots"><i></i><i class="on"></i></div>
-          <div class="pill"><i></i>Открыть лаунчер</div>
-          <small>Смахните от левого края для всех приложений</small>
+          <small>Смахните снизу вверх для меню</small>
         </div>
       </div>
     </div>
@@ -274,6 +273,7 @@
       <div class="drawer-home"></div>
       <div class="scrim"></div>
       <div class="drawer">
+        <div class="grab"></div>
         <div class="search">
           <div class="field" style="color:var(--text)">telegram</div>
           <div class="close">✕</div>
@@ -306,7 +306,6 @@
         </div>
         <div class="dash">
           <div class="on"><div class="dot"></div>Приложения</div>
-          <div><div class="dot h"></div>Недавние</div>
           <div><div class="dot g"></div>Виджеты</div>
           <div><div class="dot s"></div>Настройки</div>
         </div>
@@ -316,11 +315,12 @@
 
   <!-- 4. Drawer -->
   <div class="phone-wrap">
-    <div class="phone-label">Док-панель (drawer)</div>
+    <div class="phone-label">Нижнее меню (bottom sheet)</div>
     <div class="phone">
       <div class="drawer-home"></div>
       <div class="scrim"></div>
       <div class="drawer">
+        <div class="grab"></div>
         <div class="search">
           <div class="field">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
@@ -361,7 +361,6 @@
 
         <div class="dash">
           <div class="on"><div class="dot"></div>Приложения</div>
-          <div><div class="dot h"></div>Недавние</div>
           <div><div class="dot g"></div>Виджеты</div>
           <div><div class="dot s"></div>Настройки</div>
         </div>
@@ -377,6 +376,7 @@
       <div class="drawer-home"></div>
       <div class="scrim"></div>
       <div class="drawer">
+        <div class="grab"></div>
         <div class="search">
           <div class="field">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
@@ -430,7 +430,6 @@
 
         <div class="dash">
           <div><div class="dot"></div>Приложения</div>
-          <div><div class="dot h"></div>Недавние</div>
           <div class="on"><div class="dot g"></div>Виджеты</div>
           <div><div class="dot s"></div>Настройки</div>
         </div>
