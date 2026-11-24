@@ -56,6 +56,10 @@ class LauncherPrefs(context: Context) {
 
     // ------------------------------------------------------------- widgets
 
+    var notificationsEnabled: Boolean
+        get() = prefs.getBoolean(KEY_NOTIFICATIONS_ENABLED, false)
+        set(value) = prefs.edit().putBoolean(KEY_NOTIFICATIONS_ENABLED, value).apply()
+
     var widgetsEnabled: Boolean
         get() = prefs.getBoolean(KEY_WIDGETS_ENABLED, false)
         set(value) = prefs.edit().putBoolean(KEY_WIDGETS_ENABLED, value).apply()
@@ -191,6 +195,7 @@ class LauncherPrefs(context: Context) {
         const val KEY_WIDGETS_ENABLED = "widgets_enabled"
         const val KEY_WIDGETS_HOME = "widgets_home"
         const val KEY_WIDGETS_POS = "widgets_home_pos"
+        const val KEY_NOTIFICATIONS_ENABLED = "notifications_enabled"
         const val KEY_WEATHER_CITY = "weather_city"
         const val KEY_WEATHER_LAT = "weather_lat"
         const val KEY_WEATHER_LON = "weather_lon"

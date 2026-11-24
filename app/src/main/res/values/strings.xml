@@ -148,4 +148,14 @@
     <string name="home_edit_hint">Drag a widget anywhere</string>
     <string name="home_edit_done">Done</string>
     <string name="home_edit_reset">Reset</string>
+    <!-- Notifications -->
+    <string name="settings_notifications_section">Notifications</string>
+    <string name="settings_notifications">Badges and now playing</string>
+    <string name="settings_notifications_desc">Unread counters on icons, media card on the home screen</string>
+    <string name="settings_notifications_access">Notification access</string>
+    <string name="notifications_access_granted">Granted</string>
+    <string name="notifications_access_missing">Not granted — tap to open the system settings</string>
+    <string name="now_playing_title">Now playing</string>
+    <string name="now_playing_play">Play</string>
+    <string name="now_playing_pause">Pause</string>
 </resources>

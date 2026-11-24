@@ -116,6 +116,8 @@ fun LauncherDrawer(
     onSetWidgetSpan: (Int, Int) -> Unit,
     onToggleHomeWidget: (Int) -> Unit,
     onSetWidgetWidth: (Int, Int) -> Unit,
+    onNotificationsEnabledChange: (Boolean) -> Unit,
+    onOpenNotificationAccess: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val contactsLauncher = rememberLauncherForActivityResult(
@@ -221,6 +223,8 @@ fun LauncherDrawer(
                         onRefreshWeather = onRefreshWeather,
                         onToggleHidden = onToggleHidden,
                         onOpenHomeSettings = onOpenHomeSettings,
+                        onNotificationsEnabledChange = onNotificationsEnabledChange,
+                        onOpenNotificationAccess = onOpenNotificationAccess,
                     )
                 }
             }
@@ -331,6 +335,7 @@ private fun AppsScope(
                         onClick = { onLaunch(row.entry) },
                         onLongClick = { onLongPressApp(row.entry) },
                         iconSize = 46.dp,
+                        badgeCount = state.badges[row.entry.packageName] ?: 0,
                     )
                 }
             }

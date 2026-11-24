@@ -113,6 +113,7 @@ fun LauncherScreen(viewModel: LauncherViewModel = viewModel()) {
 
     LifecycleEventEffect(Lifecycle.Event.ON_START) { widgetHolder.start() }
     LifecycleEventEffect(Lifecycle.Event.ON_STOP) { widgetHolder.stop() }
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.refreshNotificationAccess() }
 
     BoxWithConstraints(
         modifier = Modifier
@@ -149,6 +150,8 @@ fun LauncherScreen(viewModel: LauncherViewModel = viewModel()) {
             onExitHomeEdit = { viewModel.setHomeEditMode(false) },
             onMoveHomeWidget = viewModel::moveHomeWidget,
             onResetHomeLayout = viewModel::resetHomeLayout,
+            onToggleNowPlaying = viewModel::toggleNowPlaying,
+            onOpenNowPlayingApp = viewModel::openPackage,
             modifier = Modifier
                 .fillMaxSize()
                 .graphicsLayer {
@@ -229,6 +232,8 @@ fun LauncherScreen(viewModel: LauncherViewModel = viewModel()) {
             onSetWidgetSpan = viewModel::setWidgetSpan,
             onToggleHomeWidget = viewModel::toggleHomeWidget,
             onSetWidgetWidth = viewModel::setWidgetWidth,
+            onNotificationsEnabledChange = viewModel::setNotificationsEnabled,
+            onOpenNotificationAccess = viewModel::openNotificationAccessSettings,
             modifier = Modifier
                 .align(Alignment.CenterStart)
                 .fillMaxHeight()

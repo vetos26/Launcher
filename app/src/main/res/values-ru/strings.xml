@@ -148,4 +148,14 @@
     <string name="home_edit_hint">Перетащите виджет в любое место</string>
     <string name="home_edit_done">Готово</string>
     <string name="home_edit_reset">Сброс</string>
+    <!-- Notifications -->
+    <string name="settings_notifications_section">Уведомления</string>
+    <string name="settings_notifications">Значки и «сейчас играет»</string>
+    <string name="settings_notifications_desc">Счётчики непрочитанных на иконках, карточка плеера на главном</string>
+    <string name="settings_notifications_access">Доступ к уведомлениям</string>
+    <string name="notifications_access_granted">Разрешён</string>
+    <string name="notifications_access_missing">Не разрешён — нажмите, чтобы открыть системные настройки</string>
+    <string name="now_playing_title">Сейчас играет</string>
+    <string name="now_playing_play">Включить</string>
+    <string name="now_playing_pause">Пауза</string>
 </resources>

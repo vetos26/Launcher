@@ -15,6 +15,7 @@ import android.os.Build
 import android.provider.Settings
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -22,7 +23,10 @@ import dev.utouch.launcher.data.AppEntry
 import dev.utouch.launcher.data.AppShortcut
 import dev.utouch.launcher.data.Contact
 import dev.utouch.launcher.data.ContactsRepository
+import dev.utouch.launcher.data.LauncherNotificationService
 import dev.utouch.launcher.data.LauncherPrefs
+import dev.utouch.launcher.data.NotificationCenter
+import dev.utouch.launcher.data.NowPlaying
 import dev.utouch.launcher.data.PackageRepository
 import dev.utouch.launcher.data.Place
 import dev.utouch.launcher.data.ShortcutRepository
@@ -57,6 +61,13 @@ data class LauncherUiState(
     val homeLayout: Map<Int, WidgetPos> = emptyMap(),
     /** True while the home screen is in "move widgets around" mode. */
     val homeEditMode: Boolean = false,
+    /** Unread notifications per package; empty unless the user enabled the feature. */
+    val badges: Map<String, Int> = emptyMap(),
+    /** Currently playing media, if any and if the feature is enabled. */
+    val nowPlaying: NowPlaying? = null,
+    /** The notification-listener access bit as the system sees it right now. */
+    val notificationsEnabled: Boolean = false,
+    val notificationAccess: Boolean = false,
     val recentKeys: List<String> = emptyList(),
     val query: String = "",
     val includeSystemApps: Boolean = true,
@@ -135,6 +146,8 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                 widgetsEnabled = prefs.widgetsEnabled,
                 homeWidgetIds = prefs.homeWidgetIds(),
                 homeLayout = prefs.homePositions(),
+                notificationsEnabled = prefs.notificationsEnabled,
+                notificationAccess = hasNotificationAccess(),
                 recentKeys = prefs.recentKeys(),
                 contactsAllowed = ContextCompat.checkSelfPermission(
                     appContext,
@@ -145,6 +158,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                 showCoach = !prefs.coachShown,
             )
         }
+        observeNotifications()
         registerPackageReceiver()
         registerBatteryReceiver()
         reloadApps()
@@ -156,6 +170,73 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         runCatching { appContext.unregisterReceiver(packageReceiver) }
         runCatching { appContext.unregisterReceiver(batteryReceiver) }
         super.onCleared()
+    }
+
+    // ------------------------------------------------------- notifications
+
+    private fun hasNotificationAccess(): Boolean = runCatching {
+        NotificationManagerCompat.getEnabledListenerPackages(appContext)
+            .contains(appContext.packageName)
+    }.getOrDefault(false)
+
+    private fun observeNotifications() {
+        viewModelScope.launch {
+            NotificationCenter.badges.collect { badges ->
+                val enabled = _uiState.value.notificationsEnabled
+                _uiState.update { it.copy(badges = if (enabled) badges else emptyMap()) }
+            }
+        }
+        viewModelScope.launch {
+            NotificationCenter.nowPlaying.collect { playing ->
+                val enabled = _uiState.value.notificationsEnabled
+                _uiState.update { it.copy(nowPlaying = if (enabled) playing else null) }
+            }
+        }
+    }
+
+    fun setNotificationsEnabled(value: Boolean) {
+        prefs.notificationsEnabled = value
+        _uiState.update {
+            it.copy(
+                notificationsEnabled = value,
+                notificationAccess = hasNotificationAccess(),
+                badges = if (value) it.badges else emptyMap(),
+                nowPlaying = if (value) it.nowPlaying else null,
+            )
+        }
+        if (value) {
+            requestNotificationRebind()
+        } else {
+            NotificationCenter.clear()
+        }
+    }
+
+    /** Called when the launcher comes back to the foreground (e.g. from the system settings). */
+    fun refreshNotificationAccess() {
+        val access = hasNotificationAccess()
+        if (access == _uiState.value.notificationAccess) return
+        _uiState.update { it.copy(notificationAccess = access) }
+        if (access && _uiState.value.notificationsEnabled) requestNotificationRebind()
+    }
+
+    private fun requestNotificationRebind() {
+        runCatching {
+            LauncherNotificationService.requestRebind(
+                android.content.ComponentName(appContext, LauncherNotificationService::class.java),
+            )
+        }
+    }
+
+    fun openNotificationAccessSettings() {
+        runCatching {
+            val intent = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            appContext.startActivity(intent)
+        }
+    }
+
+    fun toggleNowPlaying(playing: Boolean) {
+        NotificationCenter.togglePlayPause(appContext, playing)
     }
 
     // ---------------------------------------------------------------- apps
@@ -349,6 +430,20 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             }
             prefs.saveHidden(hidden)
             state.copy(hiddenKeys = hidden)
+        }
+    }
+
+    /** Opens a package by name — used by the "now playing" card. */
+    fun openPackage(packageName: String) {
+        val app = _uiState.value.apps.firstOrNull { it.packageName == packageName }
+        if (app != null) {
+            launch(app)
+            return
+        }
+        runCatching {
+            val intent = appContext.packageManager.getLaunchIntentForPackage(packageName)
+                ?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            if (intent != null) appContext.startActivity(intent)
         }
     }
 

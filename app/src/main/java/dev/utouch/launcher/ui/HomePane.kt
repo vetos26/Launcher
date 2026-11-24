@@ -36,6 +36,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -66,11 +67,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.utouch.launcher.LauncherUiState
 import dev.utouch.launcher.R
 import dev.utouch.launcher.data.AppEntry
+import dev.utouch.launcher.data.NowPlaying
 import dev.utouch.launcher.data.Weather
 import dev.utouch.launcher.data.WidgetHostHolder
 import dev.utouch.launcher.data.WidgetPos
@@ -110,6 +113,8 @@ fun HomePane(
     onExitHomeEdit: () -> Unit,
     onMoveHomeWidget: (Int, Float, Float) -> Unit,
     onResetHomeLayout: () -> Unit,
+    onToggleNowPlaying: (Boolean) -> Unit,
+    onOpenNowPlayingApp: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val pagerState = rememberPagerState(pageCount = { 2 })
@@ -141,6 +146,8 @@ fun HomePane(
                         onExitHomeEdit = onExitHomeEdit,
                         onMoveHomeWidget = onMoveHomeWidget,
                         onResetHomeLayout = onResetHomeLayout,
+                        onToggleNowPlaying = onToggleNowPlaying,
+                        onOpenNowPlayingApp = onOpenNowPlayingApp,
                         modifier = Modifier.fillMaxSize(),
                     )
 
@@ -179,6 +186,8 @@ private fun TodayPage(
     onExitHomeEdit: () -> Unit,
     onMoveHomeWidget: (Int, Float, Float) -> Unit,
     onResetHomeLayout: () -> Unit,
+    onToggleNowPlaying: (Boolean) -> Unit,
+    onOpenNowPlayingApp: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val density = LocalDensity.current
@@ -211,7 +220,7 @@ private fun TodayPage(
                 onRefreshWeather = onRefreshWeather,
             )
             Spacer(Modifier.height(14.dp))
-            Box(
+            Column(
                 modifier = Modifier.onGloballyPositioned { coords ->
                     // Where the cards end: the automatic widget column starts right below.
                     contentBottomDp = with(density) {
@@ -220,6 +229,15 @@ private fun TodayPage(
                 },
             ) {
                 BatteryCard(level = state.batteryLevel, charging = state.batteryCharging)
+                val playing = state.nowPlaying
+                if (state.notificationsEnabled && playing != null) {
+                    Spacer(Modifier.height(14.dp))
+                    NowPlayingCard(
+                        playing = playing,
+                        onToggle = { onToggleNowPlaying(playing.isPlaying) },
+                        onOpen = { onOpenNowPlayingApp(playing.packageName) },
+                    )
+                }
             }
 
             Spacer(Modifier.weight(1f))
@@ -481,6 +499,94 @@ private fun BatteryCard(level: Int?, charging: Boolean) {
     }
 }
 
+@Composable
+private fun NowPlayingCard(
+    playing: NowPlaying,
+    onToggle: () -> Unit,
+    onOpen: () -> Unit,
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onOpen),
+        shape = RoundedCornerShape(24.dp),
+        color = Color.White.copy(alpha = 0.05f),
+        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.06f)),
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 18.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                imageVector = Icons.Default.PlayArrow,
+                contentDescription = null,
+                tint = UbuntuOrange,
+                modifier = Modifier.size(18.dp),
+            )
+            Spacer(Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(R.string.now_playing_title).uppercase(Locale.getDefault()),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = TextSecondary,
+                    letterSpacing = 1.6.sp,
+                )
+                Text(
+                    text = playing.title,
+                    style = MaterialTheme.typography.titleSmall,
+                    color = TextPrimary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                if (playing.artist != null) {
+                    Text(
+                        text = playing.artist,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = TextTertiary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+            Spacer(Modifier.width(8.dp))
+            Box(
+                modifier = Modifier
+                    .size(38.dp)
+                    .clip(CircleShape)
+                    .background(UbuntuOrange.copy(alpha = 0.18f))
+                    .clickable(onClick = onToggle),
+                contentAlignment = Alignment.Center,
+            ) {
+                if (playing.isPlaying) {
+                    PauseGlyph(color = UbuntuOrange)
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.PlayArrow,
+                        contentDescription = stringResource(R.string.now_playing_play),
+                        tint = UbuntuOrange,
+                        modifier = Modifier.size(20.dp),
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** Two bars — the material icon set we depend on has no pause glyph. */
+@Composable
+private fun PauseGlyph(color: Color) {
+    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        repeat(2) {
+            Box(
+                modifier = Modifier
+                    .size(width = 4.dp, height = 16.dp)
+                    .clip(RoundedCornerShape(1.5.dp))
+                    .background(color),
+            )
+        }
+    }
+}
+
 // ----------------------------------------------------------------- apps scope
 
 @Composable
@@ -526,6 +632,7 @@ private fun AppsPage(
                 subtitle = if (pinned.isEmpty()) stringResource(R.string.suggested_subtitle) else null,
                 apps = boardApps,
                 showLabels = state.showLabels,
+                badges = state.badges,
                 onLaunch = onLaunch,
                 onLongPress = onLongPressApp,
             )
@@ -541,6 +648,7 @@ private fun AppBoard(
     subtitle: String?,
     apps: List<AppEntry>,
     showLabels: Boolean,
+    badges: Map<String, Int> = emptyMap(),
     onLaunch: (AppEntry) -> Unit,
     onLongPress: (AppEntry) -> Unit,
 ) {
@@ -589,6 +697,7 @@ private fun AppBoard(
                                 onClick = { onLaunch(app) },
                                 onLongClick = { onLongPress(app) },
                                 modifier = Modifier.weight(1f),
+                                badgeCount = badges[app.packageName] ?: 0,
                             )
                         }
                         repeat(4 - row.size) {

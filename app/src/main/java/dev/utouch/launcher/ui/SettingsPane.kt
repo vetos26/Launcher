@@ -20,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Refresh
@@ -67,6 +68,8 @@ fun SettingsScope(
     onRefreshWeather: () -> Unit,
     onToggleHidden: (String) -> Unit,
     onOpenHomeSettings: () -> Unit,
+    onNotificationsEnabledChange: (Boolean) -> Unit,
+    onOpenNotificationAccess: () -> Unit,
 ) {
     var cityDialog by remember { mutableStateOf(false) }
     var cityQuery by remember { mutableStateOf("") }
@@ -212,6 +215,30 @@ fun SettingsScope(
                 description = R.string.setting_labels_desc,
                 checked = state.showLabels,
                 onCheckedChange = onShowLabelsChange,
+            )
+        }
+
+        item {
+            SectionHeader(stringResource(R.string.settings_notifications_section))
+        }
+        item {
+            SwitchRow(
+                title = R.string.settings_notifications,
+                description = R.string.settings_notifications_desc,
+                checked = state.notificationsEnabled,
+                onCheckedChange = onNotificationsEnabledChange,
+            )
+        }
+        item {
+            ActionRow(
+                icon = Icons.Default.Notifications,
+                title = stringResource(R.string.settings_notifications_access),
+                subtitle = if (state.notificationAccess) {
+                    stringResource(R.string.notifications_access_granted)
+                } else {
+                    stringResource(R.string.notifications_access_missing)
+                },
+                onClick = onOpenNotificationAccess,
             )
         }
 

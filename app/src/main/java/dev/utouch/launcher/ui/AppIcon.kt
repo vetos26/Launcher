@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.sp
 import dev.utouch.launcher.R
 import dev.utouch.launcher.data.AppEntry
 import dev.utouch.launcher.ui.theme.TextPrimary
+import dev.utouch.launcher.ui.theme.UbuntuOrange
 
 /**
  * An app icon on a translucent "plate", the way Unity 8 / Ubuntu Touch draws launcher items.
@@ -49,6 +50,7 @@ fun AppTile(
     onLongClick: () -> Unit,
     modifier: Modifier = Modifier,
     iconSize: Dp = 52.dp,
+    badgeCount: Int = 0,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()
@@ -84,6 +86,25 @@ fun AppTile(
                     .background(Color.White.copy(alpha = 0.07f), CircleShape),
             )
             AppIconImage(entry = entry, size = iconSize)
+
+            if (badgeCount > 0) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(top = 2.dp, end = 2.dp)
+                        .size(18.dp)
+                        .clip(CircleShape)
+                        .background(UbuntuOrange),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = if (badgeCount > 9) "9+" else badgeCount.toString(),
+                        color = Color.White,
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                }
+            }
         }
 
         if (showLabel) {

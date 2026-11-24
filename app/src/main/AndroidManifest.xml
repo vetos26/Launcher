@@ -47,6 +47,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!-- Notification badges and the "now playing" card. The user grants the
+             notification access manually in the system settings; until then the
+             service is never bound and the launcher behaves as before. -->
+        <service
+            android:name=".data.LauncherNotificationService"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>
