@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -210,6 +211,7 @@ fun HomeEditToolbar(
 ) {
     Row(
         modifier = modifier
+            .fillMaxWidth(0.94f)
             .clip(RoundedCornerShape(26.dp))
             .background(androidx.compose.ui.graphics.Color(0xFF232329).copy(alpha = 0.94f))
             .border(
@@ -222,7 +224,9 @@ fun HomeEditToolbar(
     ) {
         Text(
             text = stringResource(R.string.home_edit_hint),
-            modifier = Modifier.padding(start = 10.dp, end = 6.dp),
+            modifier = Modifier
+                .weight(1f)
+                .padding(start = 10.dp, end = 6.dp),
             style = MaterialTheme.typography.labelSmall,
             color = TextPrimary,
         )
