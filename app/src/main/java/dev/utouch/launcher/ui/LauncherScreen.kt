@@ -65,9 +65,14 @@ fun LauncherScreen(viewModel: LauncherViewModel = viewModel()) {
     val widgetHolder = remember { WidgetHostHolder(context) }
     val drawerProgress = remember { Animatable(0f) }
     var selectedApp by remember { mutableStateOf<AppEntry?>(null) }
+    var dockPickerOpen by remember { mutableStateOf(false) }
     var tab by rememberSaveable { mutableStateOf(DrawerTab.APPS) }
 
     val scrimVisible by remember { derivedStateOf { drawerProgress.value > 0.02f } }
+    val dockApps = remember(state.dockKeys, state.apps) {
+        val byKey = state.apps.associateBy { it.key }
+        state.dockKeys.mapNotNull { byKey[it] }
+    }
 
     fun animateDrawer(open: Boolean) {
         scope.launch {
@@ -130,12 +135,6 @@ fun LauncherScreen(viewModel: LauncherViewModel = viewModel()) {
             },
             onLaunch = viewModel::launch,
             onLongPressApp = { selectedApp = it },
-            onOpenWeatherSettings = {
-                tab = DrawerTab.SETTINGS
-                viewModel.dismissCoach()
-                animateDrawer(true)
-            },
-            onRefreshWeather = { viewModel.refreshWeather(force = true) },
             onDismissCoach = viewModel::dismissCoach,
             widgetHolder = widgetHolder,
             homeWidgets = if (state.widgetsEnabled) {
@@ -151,6 +150,8 @@ fun LauncherScreen(viewModel: LauncherViewModel = viewModel()) {
             onResetHomeLayout = viewModel::resetHomeLayout,
             onToggleNowPlaying = viewModel::toggleNowPlaying,
             onOpenNowPlayingApp = viewModel::openPackage,
+            dockApps = dockApps,
+            onOpenDockPicker = { dockPickerOpen = true },
             modifier = Modifier
                 .fillMaxSize()
                 .graphicsLayer {
@@ -247,6 +248,15 @@ fun LauncherScreen(viewModel: LauncherViewModel = viewModel()) {
                 .graphicsLayer {
                     translationY = sheetHeightPx * (1f - drawerProgress.value)
                 },
+        )
+    }
+
+    if (dockPickerOpen) {
+        DockPickerSheet(
+            apps = state.apps.filterNot { it.isSystem && it.key !in state.dockKeys },
+            dockKeys = state.dockKeys,
+            onToggle = viewModel::toggleDock,
+            onDismiss = { dockPickerOpen = false },
         )
     }
 

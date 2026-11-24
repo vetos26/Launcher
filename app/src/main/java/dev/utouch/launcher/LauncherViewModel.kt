@@ -58,6 +58,8 @@ data class LauncherUiState(
     val widgets: List<WidgetRecord> = emptyList(),
     val widgetsEnabled: Boolean = false,
     val homeWidgetIds: List<Int> = emptyList(),
+    /** Keys of the apps placed in the home dock, in display order. */
+    val dockKeys: List<String> = emptyList(),
     /** Free positions of home widgets in dp; a widget without an entry is auto-placed. */
     val homeLayout: Map<Int, WidgetPos> = emptyMap(),
     /** True while the home screen is in "move widgets around" mode. */
@@ -146,6 +148,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                 widgets = prefs.widgets(),
                 widgetsEnabled = prefs.widgetsEnabled,
                 homeWidgetIds = prefs.homeWidgetIds(),
+                dockKeys = prefs.dockKeys(),
                 homeLayout = prefs.homePositions(),
                 notificationsEnabled = prefs.notificationsEnabled,
                 notificationAccess = hasNotificationAccess(),
@@ -171,6 +174,29 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         runCatching { appContext.unregisterReceiver(packageReceiver) }
         runCatching { appContext.unregisterReceiver(batteryReceiver) }
         super.onCleared()
+    }
+
+    // ----------------------------------------------------------------- dock
+
+    fun addToDock(key: String) {
+        _uiState.update { state ->
+            if (key in state.dockKeys) return@update state
+            val keys = state.dockKeys + key
+            prefs.saveDock(keys)
+            state.copy(dockKeys = keys)
+        }
+    }
+
+    fun removeFromDock(key: String) {
+        _uiState.update { state ->
+            val keys = state.dockKeys - key
+            prefs.saveDock(keys)
+            state.copy(dockKeys = keys)
+        }
+    }
+
+    fun toggleDock(key: String) {
+        if (key in _uiState.value.dockKeys) removeFromDock(key) else addToDock(key)
     }
 
     // ------------------------------------------------------- notifications

@@ -158,4 +158,10 @@
     <string name="now_playing_title">Now playing</string>
     <string name="now_playing_play">Play</string>
     <string name="now_playing_pause">Pause</string>
+    <!-- Dock -->
+    <string name="dock_add">Add an app to the dock</string>
+    <string name="dock_remove">Remove from the dock</string>
+    <string name="dock_picker_title">Dock</string>
+    <string name="dock_picker_body">Tap an app to put it in the dock, tap again to take it out.</string>
+    <string name="dock_picker_hint">Search apps</string>
 </resources>

@@ -158,4 +158,10 @@
     <string name="now_playing_title">Сейчас играет</string>
     <string name="now_playing_play">Включить</string>
     <string name="now_playing_pause">Пауза</string>
+    <!-- Dock -->
+    <string name="dock_add">Добавить приложение в док</string>
+    <string name="dock_remove">Убрать из дока</string>
+    <string name="dock_picker_title">Док</string>
+    <string name="dock_picker_body">Нажмите на приложение, чтобы добавить его в док, и ещё раз — чтобы убрать.</string>
+    <string name="dock_picker_hint">Поиск приложений</string>
 </resources>

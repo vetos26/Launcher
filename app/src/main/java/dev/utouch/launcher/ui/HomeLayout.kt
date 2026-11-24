@@ -59,6 +59,7 @@ fun HomeWidgetCanvas(
     layout: Map<Int, WidgetPos>,
     editMode: Boolean,
     contentTopDp: Float,
+    bottomInsetDp: Float = 0f,
     onMove: (Int, Float, Float) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -78,7 +79,7 @@ fun HomeWidgetCanvas(
             val saved = layout[record.id]
 
             val maxX = (pageWidth - HOME_MARGIN_DP - width).coerceAtLeast(HOME_MARGIN_DP)
-            val maxY = (pageHeight - height).coerceAtLeast(0f)
+            val maxY = (pageHeight - height - bottomInsetDp).coerceAtLeast(0f)
             val startX = (saved?.x ?: HOME_MARGIN_DP).coerceIn(HOME_MARGIN_DP, maxX)
             val startY = (saved?.y ?: cursor).coerceIn(0f, maxY)
 

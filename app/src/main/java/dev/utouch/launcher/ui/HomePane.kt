@@ -102,8 +102,6 @@ fun HomePane(
     onOpenLauncher: () -> Unit,
     onLaunch: (AppEntry) -> Unit,
     onLongPressApp: (AppEntry) -> Unit,
-    onOpenWeatherSettings: () -> Unit,
-    onRefreshWeather: () -> Unit,
     onDismissCoach: () -> Unit,
     widgetHolder: WidgetHostHolder?,
     homeWidgets: List<WidgetRecord>,
@@ -115,6 +113,8 @@ fun HomePane(
     onResetHomeLayout: () -> Unit,
     onToggleNowPlaying: (Boolean) -> Unit,
     onOpenNowPlayingApp: (String) -> Unit,
+    dockApps: List<AppEntry>,
+    onOpenDockPicker: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val pagerState = rememberPagerState(pageCount = { 2 })
@@ -136,8 +136,6 @@ fun HomePane(
                     0 -> TodayPage(
                         state = state,
                         onOpenLauncher = onOpenLauncher,
-                        onOpenWeatherSettings = onOpenWeatherSettings,
-                        onRefreshWeather = onRefreshWeather,
                         widgetHolder = widgetHolder,
                         homeWidgets = homeWidgets,
                         homeLayout = homeLayout,
@@ -148,6 +146,11 @@ fun HomePane(
                         onResetHomeLayout = onResetHomeLayout,
                         onToggleNowPlaying = onToggleNowPlaying,
                         onOpenNowPlayingApp = onOpenNowPlayingApp,
+                        dockApps = dockApps,
+                        onLaunch = onLaunch,
+                        onLongPressApp = onLongPressApp,
+                        onOpenDockPicker = onOpenDockPicker,
+                        pagerState = pagerState,
                         modifier = Modifier.fillMaxSize(),
                     )
 
@@ -176,8 +179,6 @@ fun HomePane(
 private fun TodayPage(
     state: LauncherUiState,
     onOpenLauncher: () -> Unit,
-    onOpenWeatherSettings: () -> Unit,
-    onRefreshWeather: () -> Unit,
     widgetHolder: WidgetHostHolder?,
     homeWidgets: List<WidgetRecord>,
     homeLayout: Map<Int, WidgetPos>,
@@ -188,10 +189,15 @@ private fun TodayPage(
     onResetHomeLayout: () -> Unit,
     onToggleNowPlaying: (Boolean) -> Unit,
     onOpenNowPlayingApp: (String) -> Unit,
+    dockApps: List<AppEntry>,
+    onLaunch: (AppEntry) -> Unit,
+    onLongPressApp: (AppEntry) -> Unit,
+    onOpenDockPicker: () -> Unit,
+    pagerState: PagerState,
     modifier: Modifier = Modifier,
 ) {
     val density = LocalDensity.current
-    var contentBottomDp by remember { mutableStateOf(0f) }
+    var headerBottomDp by remember { mutableStateOf(0f) }
 
     Box(
         modifier = modifier
@@ -209,29 +215,20 @@ private fun TodayPage(
                 .fillMaxSize()
                 .padding(horizontal = 22.dp),
         ) {
-            Spacer(Modifier.height(18.dp))
-            TodayHeader(onOpenLauncher = onOpenLauncher)
-
-            Spacer(Modifier.weight(0.6f))
-
-            WeatherCard(
-                state = state,
-                onOpenWeatherSettings = onOpenWeatherSettings,
-                onRefreshWeather = onRefreshWeather,
-            )
-            Spacer(Modifier.height(14.dp))
             Column(
                 modifier = Modifier.onGloballyPositioned { coords ->
-                    // Where the cards end: the automatic widget column starts right below.
-                    contentBottomDp = with(density) {
+                    // Where the header ends: the automatic widget column starts right below.
+                    headerBottomDp = with(density) {
                         (coords.positionInParent().y + coords.size.height).toDp().value
                     }
                 },
             ) {
-                BatteryCard(level = state.batteryLevel, charging = state.batteryCharging)
+                Spacer(Modifier.height(18.dp))
+                TodayHeader(onOpenLauncher = onOpenLauncher)
+
                 val playing = state.nowPlaying
                 if (state.notificationsEnabled && playing != null) {
-                    Spacer(Modifier.height(14.dp))
+                    Spacer(Modifier.height(16.dp))
                     NowPlayingCard(
                         playing = playing,
                         onToggle = { onToggleNowPlaying(playing.isPlaying) },
@@ -241,6 +238,18 @@ private fun TodayPage(
             }
 
             Spacer(Modifier.weight(1f))
+
+            PageDots(pagerState)
+            Spacer(Modifier.height(12.dp))
+            HomeDock(
+                apps = dockApps,
+                badges = state.badges,
+                onLaunch = onLaunch,
+                onLongPress = onLongPressApp,
+                onAdd = onOpenDockPicker,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Spacer(Modifier.height(10.dp))
         }
 
         if (homeWidgets.isNotEmpty()) {
@@ -249,7 +258,8 @@ private fun TodayPage(
                 holder = widgetHolder,
                 layout = homeLayout,
                 editMode = homeEditMode,
-                contentTopDp = contentBottomDp,
+                contentTopDp = headerBottomDp,
+                bottomInsetDp = 120f,
                 onMove = onMoveHomeWidget,
             )
         }
@@ -307,195 +317,6 @@ private fun TodayHeader(onOpenLauncher: () -> Unit) {
             )
         }
         MenuButton(onOpenLauncher = onOpenLauncher)
-    }
-}
-
-@Composable
-private fun WeatherCard(
-    state: LauncherUiState,
-    onOpenWeatherSettings: () -> Unit,
-    onRefreshWeather: () -> Unit,
-) {
-    val weather = state.weather
-    val city = state.weatherCity
-
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(28.dp),
-        color = Color.White.copy(alpha = 0.055f),
-        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.07f)),
-    ) {
-        Column(modifier = Modifier.padding(20.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = stringResource(R.string.weather_title).uppercase(Locale.getDefault()),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = UbuntuOrange.copy(alpha = 0.9f),
-                    letterSpacing = 1.6.sp,
-                )
-                Spacer(Modifier.weight(1f))
-                if (state.weatherLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(14.dp),
-                        color = UbuntuOrange,
-                        strokeWidth = 2.dp,
-                    )
-                }
-            }
-            Spacer(Modifier.height(10.dp))
-
-            when {
-                city == null -> {
-                    Text(
-                        text = stringResource(R.string.weather_unset_title),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = TextPrimary,
-                    )
-                    Text(
-                        text = stringResource(R.string.weather_unset_body),
-                        modifier = Modifier.padding(top = 4.dp),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = TextSecondary,
-                    )
-                    TextButton(
-                        onClick = onOpenWeatherSettings,
-                        contentPadding = PaddingValues(0.dp),
-                        modifier = Modifier.padding(top = 2.dp),
-                    ) {
-                        Text(
-                            text = stringResource(R.string.weather_set_city),
-                            style = MaterialTheme.typography.titleSmall,
-                            color = UbuntuOrange,
-                        )
-                    }
-                }
-
-                weather != null -> WeatherContent(
-                    weather = weather,
-                    city = city,
-                    onRefreshWeather = onRefreshWeather,
-                )
-
-                else -> {
-                    Text(
-                        text = stringResource(R.string.weather_error),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = TextSecondary,
-                    )
-                    TextButton(
-                        onClick = onRefreshWeather,
-                        contentPadding = PaddingValues(0.dp),
-                        modifier = Modifier.padding(top = 2.dp),
-                    ) {
-                        Text(
-                            text = stringResource(R.string.weather_retry),
-                            style = MaterialTheme.typography.titleSmall,
-                            color = UbuntuOrange,
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun WeatherContent(
-    weather: Weather,
-    city: String,
-    onRefreshWeather: () -> Unit,
-) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = "${weather.temperature}°",
-                style = MaterialTheme.typography.displayMedium,
-                color = TextPrimary,
-            )
-            Text(
-                text = city,
-                style = MaterialTheme.typography.bodyMedium,
-                color = TextPrimary.copy(alpha = 0.9f),
-            )
-            Text(
-                text = stringResource(weatherDescriptionRes(weather.code)),
-                style = MaterialTheme.typography.bodySmall,
-                color = TextSecondary,
-            )
-        }
-        Text(
-            text = weatherGlyph(weather.code, weather.isDay),
-            fontSize = 46.sp,
-        )
-    }
-    TextButton(
-        onClick = onRefreshWeather,
-        contentPadding = PaddingValues(0.dp),
-        modifier = Modifier.padding(top = 4.dp),
-    ) {
-        Text(
-            text = stringResource(R.string.weather_refresh),
-            style = MaterialTheme.typography.labelSmall,
-            color = UbuntuOrange,
-        )
-    }
-}
-
-@Composable
-private fun BatteryCard(level: Int?, charging: Boolean) {
-    val fraction = ((level ?: 0).coerceIn(0, 100)) / 100f
-    val barColor = when {
-        charging -> Color(0xFF5FD08A)
-        level != null && level <= 15 -> Color(0xFFE86D6D)
-        else -> UbuntuOrange
-    }
-
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
-        color = Color.White.copy(alpha = 0.05f),
-        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.06f)),
-    ) {
-        Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = stringResource(R.string.battery_title).uppercase(Locale.getDefault()),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = TextSecondary,
-                    letterSpacing = 1.6.sp,
-                )
-                Spacer(Modifier.weight(1f))
-                Text(
-                    text = level?.let { "$it%" } ?: "—",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = TextPrimary,
-                )
-            }
-            Spacer(Modifier.height(10.dp))
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(6.dp)
-                    .clip(CircleShape)
-                    .background(Color.White.copy(alpha = 0.12f)),
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth(fraction)
-                        .height(6.dp)
-                        .clip(CircleShape)
-                        .background(barColor),
-                )
-            }
-            if (charging) {
-                Text(
-                    text = stringResource(R.string.battery_charging),
-                    modifier = Modifier.padding(top = 6.dp),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Color(0xFF5FD08A),
-                )
-            }
-        }
     }
 }
 

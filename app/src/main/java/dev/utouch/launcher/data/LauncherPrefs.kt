@@ -54,6 +54,18 @@ class LauncherPrefs(context: Context) {
         return updated
     }
 
+    // ---------------------------------------------------------------- dock
+
+    fun dockKeys(): List<String> =
+        prefs.getString(KEY_DOCK, null)
+            ?.split('|')
+            ?.filter { it.isNotBlank() }
+            ?: emptyList()
+
+    fun saveDock(keys: List<String>) {
+        prefs.edit().putString(KEY_DOCK, keys.joinToString("|")).apply()
+    }
+
     // ------------------------------------------------------------- widgets
 
     var notificationsEnabled: Boolean
@@ -196,6 +208,7 @@ class LauncherPrefs(context: Context) {
         const val KEY_WIDGETS_HOME = "widgets_home"
         const val KEY_WIDGETS_POS = "widgets_home_pos"
         const val KEY_NOTIFICATIONS_ENABLED = "notifications_enabled"
+        const val KEY_DOCK = "dock_apps"
         const val KEY_WEATHER_CITY = "weather_city"
         const val KEY_WEATHER_LAT = "weather_lat"
         const val KEY_WEATHER_LON = "weather_lon"
