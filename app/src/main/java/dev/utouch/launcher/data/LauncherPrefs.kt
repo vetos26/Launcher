@@ -62,6 +62,10 @@ class LauncherPrefs(context: Context) {
             ?.filter { it.isNotBlank() }
             ?: emptyList()
 
+    var dockInitialized: Boolean
+        get() = prefs.getBoolean(KEY_DOCK_INIT, false)
+        set(value) = prefs.edit().putBoolean(KEY_DOCK_INIT, value).apply()
+
     fun saveDock(keys: List<String>) {
         prefs.edit().putString(KEY_DOCK, keys.joinToString("|")).apply()
     }
@@ -209,6 +213,7 @@ class LauncherPrefs(context: Context) {
         const val KEY_WIDGETS_POS = "widgets_home_pos"
         const val KEY_NOTIFICATIONS_ENABLED = "notifications_enabled"
         const val KEY_DOCK = "dock_apps"
+        const val KEY_DOCK_INIT = "dock_initialized"
         const val KEY_WEATHER_CITY = "weather_city"
         const val KEY_WEATHER_LAT = "weather_lat"
         const val KEY_WEATHER_LON = "weather_lon"

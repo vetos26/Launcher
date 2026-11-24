@@ -138,6 +138,11 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     }
 
     init {
+        // First run: seed the dock with the pinned apps so it is not an empty bar.
+        if (!prefs.dockInitialized) {
+            prefs.saveDock(prefs.pinnedKeys().take(4))
+            prefs.dockInitialized = true
+        }
         _uiState.update {
             it.copy(
                 includeSystemApps = prefs.includeSystemApps,
